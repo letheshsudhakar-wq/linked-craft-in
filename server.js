@@ -16,6 +16,9 @@ app.use(express.json());
 
 // Serve static frontend files from this directory
 app.use(express.static(path.join(__dirname)));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // JWT token generation and verification helpers using Node.js crypto (no external jwt dependencies)
 function generateToken(payload) {
@@ -40,7 +43,7 @@ function verifyToken(token) {
 async function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  
+
   if (!token) {
     return res.status(401).json({ error: 'Access token required' });
   }
@@ -101,7 +104,7 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/user', authenticateToken, (req, res) => {
   // Return user info safely (without passwordHash)
   const { passwordHash, ...safeUserData } = req.user;
-  
+
   // Inform the frontend if server-wide API keys/hosts are configured
   res.json({
     user: safeUserData,
@@ -294,8 +297,8 @@ const generateDemoDrafts = (topic, style, samples) => {
 
   return variations.map(v => {
     return v.replace(/bootstrapping/gi, cleanedTopic)
-            .replace(/the market size/gi, `the market size for "${cleanedTopic}"`)
-            .replace(/solve actual bottlenecks/gi, `solve actual bottlenecks around "${cleanedTopic}"`);
+      .replace(/the market size/gi, `the market size for "${cleanedTopic}"`)
+      .replace(/solve actual bottlenecks/gi, `solve actual bottlenecks around "${cleanedTopic}"`);
   });
 };
 
@@ -311,7 +314,7 @@ const parseVariations = (text) => {
       if (p) variations.push(p);
     }
   }
-  
+
   if (variations.length < 3) {
     const listParts = text.split(/(?:^|\n)(?:\d+\.|\bVARIATION\s+\d+\b|\[\d+\])\s*/i);
     const cleaned = listParts.map(p => p.trim()).filter(Boolean);
@@ -319,7 +322,7 @@ const parseVariations = (text) => {
       return cleaned.slice(0, 3);
     }
   }
-  
+
   if (variations.length < 3) {
     const paras = text.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 10);
     if (paras.length >= 3) {
@@ -611,8 +614,8 @@ app.get('/api/ollama/status', async (req, res) => {
     if (tagsRes.ok) {
       const tagsData = await tagsRes.json();
       const modelsList = tagsData.models || [];
-      const installed = modelsList.some(m => 
-        m.name.toLowerCase() === model.toLowerCase() || 
+      const installed = modelsList.some(m =>
+        m.name.toLowerCase() === model.toLowerCase() ||
         m.name.toLowerCase() === `${model.toLowerCase()}:latest` ||
         m.model.toLowerCase() === model.toLowerCase()
       );
