@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedCraft — Write LinkedIn posts in your exact voice</title>
+  <meta name="description" content="AI-powered LinkedIn post generator built for Indian founders. Paste a topic, get 3 ready-to-post drafts in 30 seconds.">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✍️</text></svg>">
+  
+  <!-- React & ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone to compile JSX on the fly in the browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Plus Jakarta Sans Font for premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ----------------------------------------------------
+       DESIGN SYSTEM & RESET (VANILLA CSS)
+       ---------------------------------------------------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #fafafa;
+      color: #111111;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Max content width, centered layout */
+    .app-container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 48px 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Cards */
+    .card {
+      background-color: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+      transition: all 0.2s ease;
+    }
+    
+    .card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Typography */
+    h1, h2, h3, h4 {
+      font-weight: 600;
+      color: #111111;
+      letter-spacing: -0.02em;
+    }
+    
+    h1 {
+      font-size: 2.25rem;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+    
+    p {
+      color: #333333;
+      margin-bottom: 16px;
+    }
+
+    .muted {
+      color: #666666;
+      font-size: 0.9rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 10px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      outline: none;
+      gap: 8px;
+      width: auto;
+    }
+
+    .btn-block {
+      display: flex;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background-color: #111111;
+      color: #ffffff;
+      border: 1px solid #111111;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background-color: #222222;
+      border-color: #222222;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+      background-color: #cccccc;
+      border-color: #cccccc;
+      color: #888888;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: #ffffff;
+      color: #111111;
+      border: 1px solid #dddddd;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #f7f7f7;
+      border-color: #cccccc;
+    }
+
+    .btn-secondary:disabled {
+      background-color: #fafafa;
+      color: #bbbbbb;
+      border-color: #eeeeee;
+      cursor: not-allowed;
+    }
+
+    .btn-danger {
+      background-color: #ffffff;
+      color: #cc0000;
+      border: 1px solid #fca5a5;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background-color: #fff0f0;
+    }
+
+    /* Input elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #333333;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 12px;
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+      background-color: #ffffff;
+      color: #111111;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      border: 2px solid #111111;
+      padding: 11px; /* adjust for border thickness to prevent layout shift */
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* Selected state */
+    .selected-state {
+      border: 2px solid #111111 !important;
+    }
+
+    /* Error state card/alert */
+    .error-alert {
+      background-color: #fff0f0;
+      color: #cc0000;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Warning alert style */
+    .warning-alert {
+      background-color: #fffbeb;
+      color: #b45309;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    /* Navigation Bar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background-color: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      margin-bottom: 32px;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .logo-badge {
+      background-color: #111111;
+      color: #ffffff;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Grids & Layout Helpers */
+    .grid-2x2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 480px) {
+      .grid-2x2 {
+        grid-template-columns: 1fr;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .navbar {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .navbar-right {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    /* Individual Stat Card */
+    .stat-card {
+      background-color: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #111111;
+      margin-top: 4px;
+    }
+
+    /* Style Selector Buttons */
+    .style-btn {
+      background-color: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      outline: none;
+    }
+
+    .style-btn:hover {
+      border-color: #888888;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .style-btn-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #111111;
+    }
+
+    .style-btn-desc {
+      font-size: 0.8rem;
+      color: #666666;
+    }
+
+    /* Variation Cards */
+    .variation-card {
+      position: relative;
+      background-color: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .variation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 8px;
+    }
+
+    .variation-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #666666;
+      background-color: #f0f0f0;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .variation-body {
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      color: #222222;
+      line-height: 1.6;
+    }
+
+    /* Onboarding Helpers */
+    .sample-loader-btn {
+      font-size: 0.8rem;
+      color: #111111;
+      background: none;
+      border: none;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 0;
+      font-weight: 500;
+    }
+
+    .sample-loader-btn:hover {
+      color: #555555;
+    }
+
+    /* Loading Overlay */
+    .loader-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 0;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #111111;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loader-message {
+      font-size: 0.95rem;
+      color: #555555;
+      font-weight: 500;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* History List Items */
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #eeeeee;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 75%;
+    }
+
+    .history-topic {
+      font-weight: 500;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-meta {
+      font-size: 0.75rem;
+      color: #777777;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .history-style-tag {
+      background-color: #fafafa;
+      border: 1px solid #e5e5e5;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+    }
+
+    /* Modal / Overlay Dialog */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 28px;
+      max-width: 500px;
+      width: 100%;
+      border: 1px solid #e5e5e5;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #999999;
+    }
+
+    .modal-close:hover {
+      color: #111111;
+    }
+
+    /* Upgrade Banner styling */
+    .upgrade-banner {
+      background-color: #111111;
+      color: #ffffff;
+      padding: 24px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    .upgrade-banner h3 {
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .upgrade-banner p {
+      color: #cccccc;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    /* Animated Landing Page Visual */
+    .landing-visual {
+      background-color: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 32px;
+      position: relative;
+      overflow: hidden;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .landing-visual::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: linear-gradient(transparent, #ffffff);
+      pointer-events: none;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #00cc66;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+      animation: pulse 1s infinite alternate;
+    }
+
+    /* Footer and links */
+    footer {
+      margin-top: auto;
+      padding-top: 48px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #888888;
+    }
+
+    footer a {
+      color: #555555;
+      text-decoration: underline;
+    }
+
+    /* Settings trigger style */
+    .settings-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #666666;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    .settings-btn:hover {
+      background-color: #eeeeee;
+      color: #111111;
+    }
+
+    /* Tabs/Toggle inside Login Signup */
+    .auth-toggle {
+      display: flex;
+      border-bottom: 1px solid #eeeeee;
+      margin-bottom: 24px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #666666;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .auth-tab.active {
+      color: #111111;
+      border-bottom-color: #111111;
+    }
+
+    /* Back Button link */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #111111;
+      text-decoration: none;
+      font-weight: 500;
+      margin-bottom: 20px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .back-link:hover {
+      opacity: 0.7;
+    }
+
+    .feed-action-btn:hover {
+      background-color: #f3f3f3 !important;
+      color: #0077b5 !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="root"></div>
+
+  <!-- ----------------------------------------------------
+       REACT APPLICATION (BABEL TRANSPILED IN BROWSER)
+       ---------------------------------------------------- -->
+  <script type="text/babel">
+
+    // Backend Endpoint Base URL (empty for same-origin server requests)
+    const API_BASE = '';
+
+    // Unified API requester helper
+    async function apiRequest(endpoint, method = 'GET', body = null) {
+      const token = localStorage.getItem('linkedcraft_token');
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const options = {
+        method,
+        headers
+      };
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+      
+      const response = await fetch(`${API_BASE}${endpoint}`, options);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed with status ${response.status}`);
+      }
+      return response.json();
+    }
+
+    // ----------------------------------------------------
+    // SAMPLE POSTS FOR ONBOARDING
+    // ----------------------------------------------------
+    const FOUNDER_SAMPLES = [
+      "Funding is not a badge of honor. It is a debt you owe to your employees, customers, and investors. Focus on building real revenue from day one. In India, capital efficiency is not a choice, it is a superpower. Scale will naturally follow when the unit economics work. #StartupIndia #Founders",
+      "We hired our first 10 core engineers by sending raw, direct DMs on Twitter and LinkedIn. No fancy recruiter pitches, no bloated job specs. Just a simple, honest note about what we are building and why it matters. Look for missionaries, not mercenaries. Missionaries ship products; mercenaries watch the clock. #BuildingInPublic #Hiring",
+      "Indian SaaS is built differently. We don't have the luxury of burning $50M on customer acquisition. We are forced to build global-grade software with tight, hungry product teams. It makes us resilient. The next decade of tech infrastructure is going to be written out of Bangalore and Pune. #IndianSaaS #Product"
+    ];
+
+    // ----------------------------------------------------
+    // HELPER UTILITIES
+    // ----------------------------------------------------
+    const formatTimeAgo = (timestamp) => {
+      const diffMs = Date.now() - timestamp;
+      const diffSec = Math.floor(diffMs / 1000);
+      const diffMin = Math.floor(diffSec / 60);
+      const diffHr = Math.floor(diffMin / 60);
+      const diffDays = Math.floor(diffHr / 24);
+
+      if (diffSec < 60) return 'Just now';
+      if (diffMin < 60) return `${diffMin}m`;
+      if (diffHr < 24) return `${diffHr}h`;
+      return `${diffDays}d`;
+    };
+
+    // ----------------------------------------------------
+    // MAIN APPLICATION COMPONENT
+    // ----------------------------------------------------
+    function App() {
+      // Router state
+      const [path, setPath] = React.useState(() => window.location.hash.replace('#', '') || '/');
+      
+      // Auth & User States
+      const [currentUser, setCurrentUser] = React.useState('');
+      const [userData, setUserData] = React.useState(null);
+      const [isInitializing, setIsInitializing] = React.useState(true);
+      
+      // Settings panel config
+      const [apiKey, setApiKey] = React.useState('');
+      const [apiEndpoint, setApiEndpoint] = React.useState('https://api.anthropic.com/v1/messages');
+      const [apiProvider, setApiProvider] = React.useState('demo');
+      const [model, setModel] = React.useState('claude-haiku-4-5');
+      const [linkedinAccessToken, setLinkedinAccessToken] = React.useState('');
+      const [linkedinPersonUrn, setLinkedinPersonUrn] = React.useState('');
+      
+      // Server global configuration flags
+      const [serverConfig, setServerConfig] = React.useState({ hasServerClaudeKey: false, hasServerOpenRouterKey: false });
+      
+      // Form States
+      const [authEmail, setAuthEmail] = React.useState('');
+      const [authPassword, setAuthPassword] = React.useState('');
+      const [authMode, setAuthMode] = React.useState('signup'); // 'signup' or 'login'
+      const [authError, setAuthError] = React.useState('');
+      
+      // Onboarding States
+      const [onboardSample1, setOnboardSample1] = React.useState('');
+      const [onboardSample2, setOnboardSample2] = React.useState('');
+      const [onboardSample3, setOnboardSample3] = React.useState('');
+      const [onboardError, setOnboardError] = React.useState('');
+
+      // Generate Page States
+      const [topicInput, setTopicInput] = React.useState('');
+      const [selectedStyle, setSelectedStyle] = React.useState('storytelling'); // storytelling, insight, contrarian, howto
+      const [isLoading, setIsLoading] = React.useState(false);
+      const [loadingMessage, setLoadingMessage] = React.useState('Writing in your voice…');
+      const [genError, setGenError] = React.useState('');
+      const [generatedDrafts, setGeneratedDrafts] = React.useState([]); // array of 3 strings
+      const [copiedIndex, setCopiedIndex] = React.useState(null); // track copy feedback
+      
+      // Publishing States
+      const [isPublishing, setIsPublishing] = React.useState(false);
+      const [publishingMessage, setPublishingMessage] = React.useState('');
+      const [publishingError, setPublishingError] = React.useState('');
+      const [publishSuccess, setPublishSuccess] = React.useState(false);
+      
+      // View Specific States
+      const [showSettingsModal, setShowSettingsModal] = React.useState(false);
+      const [activeHistoryItem, setActiveHistoryItem] = React.useState(null); 
+
+      // Restore session on app start
+      React.useEffect(() => {
+        const restoreSession = async () => {
+          const token = localStorage.getItem('linkedcraft_token');
+          if (token) {
+            try {
+              const res = await apiRequest('/api/user');
+              setCurrentUser(res.user.email);
+              setUserData(res.user);
+              setServerConfig(res.config);
+              
+              // Load saved configurations
+              setApiKey(res.user.apiKey || '');
+              setApiEndpoint(res.user.apiEndpoint || 'https://api.anthropic.com/v1/messages');
+              setApiProvider(res.user.apiProvider || 'demo');
+              setModel(res.user.model || 'claude-haiku-4-5');
+              setLinkedinAccessToken(res.user.linkedinAccessToken || '');
+              setLinkedinPersonUrn(res.user.linkedinPersonUrn || '');
+            } catch (err) {
+              console.error("Session restoration failed:", err);
+              localStorage.removeItem('linkedcraft_token');
+            }
+          }
+          setIsInitializing(false);
+        };
+        restoreSession();
+      }, []);
+
+      // Sync URL hash path changes
+      React.useEffect(() => {
+        const handleHashChange = () => {
+          const newPath = window.location.hash.replace('#', '') || '/';
+          setPath(newPath);
+          window.scrollTo(0, 0);
+          setAuthError('');
+          setOnboardError('');
+          setGenError('');
+        };
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+      }, []);
+
+      // Auto route guards based on login status
+      React.useEffect(() => {
+        if (isInitializing) return;
+
+        const publicPaths = ['/', '/login', '/signup'];
+        const isAuth = !!currentUser;
+        
+        if (!isAuth && !publicPaths.includes(path)) {
+          navigateTo('/');
+        } else if (isAuth) {
+          if (publicPaths.includes(path)) {
+            if (userData && userData.onboardingComplete) {
+              navigateTo('/dashboard');
+            } else {
+              navigateTo('/onboarding');
+            }
+          }
+        }
+      }, [path, currentUser, userData, isInitializing]);
+
+      // Navigation utility
+      const navigateTo = (toPath) => {
+        window.location.hash = '#' + toPath;
+      };
+
+      const handleLogout = () => {
+        localStorage.removeItem('linkedcraft_token');
+        setCurrentUser('');
+        setUserData(null);
+        navigateTo('/');
+      };
+
+      // ----------------------------------------------------
+      // AUTH ACTIONS
+      // ----------------------------------------------------
+      const handleAuthSubmit = async (e) => {
+        e.preventDefault();
+        setAuthError('');
+
+        if (!authEmail || !authPassword) {
+          setAuthError('Please fill in all fields.');
+          return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(authEmail)) {
+          setAuthError('Please enter a valid email address.');
+          return;
+        }
+
+        if (authPassword.length < 6) {
+          setAuthError('Password must be at least 6 characters.');
+          return;
+        }
+
+        try {
+          const endpoint = authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login';
+          const authRes = await apiRequest(endpoint, 'POST', { email: authEmail, password: authPassword });
+          
+          localStorage.setItem('linkedcraft_token', authRes.token);
+          
+          // Fetch complete profile & config
+          const res = await apiRequest('/api/user');
+          setCurrentUser(res.user.email);
+          setUserData(res.user);
+          setServerConfig(res.config);
+          
+          setApiKey(res.user.apiKey || '');
+          setApiEndpoint(res.user.apiEndpoint || 'https://api.anthropic.com/v1/messages');
+          setApiProvider(res.user.apiProvider || 'demo');
+          setModel(res.user.model || 'claude-haiku-4-5');
+          setLinkedinAccessToken(res.user.linkedinAccessToken || '');
+          setLinkedinPersonUrn(res.user.linkedinPersonUrn || '');
+          
+          if (res.user.onboardingComplete) {
+            navigateTo('/dashboard');
+          } else {
+            navigateTo('/onboarding');
+          }
+        } catch (error) {
+          setAuthError(error.message || 'Authentication failed. Please check your credentials.');
+        }
+      };
+
+      // ----------------------------------------------------
+      // ONBOARDING ACTIONS
+      // ----------------------------------------------------
+      const loadFounderSamples = () => {
+        setOnboardSample1(FOUNDER_SAMPLES[0]);
+        setOnboardSample2(FOUNDER_SAMPLES[1]);
+        setOnboardSample3(FOUNDER_SAMPLES[2]);
+      };
+
+      const handleOnboardingSubmit = async (e) => {
+        e.preventDefault();
+        setOnboardError('');
+
+        if (!onboardSample1.trim() || !onboardSample2.trim()) {
+          setOnboardError('Please fill in at least Sample post 1 and Sample post 2.');
+          return;
+        }
+
+        const samples = [onboardSample1.trim(), onboardSample2.trim()];
+        if (onboardSample3.trim()) {
+          samples.push(onboardSample3.trim());
+        }
+
+        try {
+          const updatedUser = await apiRequest('/api/user/samples', 'POST', { samples });
+          setUserData(updatedUser);
+          navigateTo('/dashboard');
+        } catch (error) {
+          setOnboardError(error.message || 'Failed to build voice profile.');
+        }
+      };
+
+      // ----------------------------------------------------
+      // AI GENERATION LOGIC
+      // ----------------------------------------------------
+      const handleGenerate = async () => {
+        if (!topicInput.trim()) return;
+        
+        const postsRemaining = 5 - (userData.postsGenerated || 0);
+        if (postsRemaining <= 0) {
+          setGenError('You have exhausted your remaining post drafts. Please upgrade your plan.');
+          return;
+        }
+
+        setIsLoading(true);
+        setGenError('');
+        setGeneratedDrafts([]);
+        
+        const messages = [
+          "Analyzing your voice profile...",
+          "Decoding tone metrics & sentence patterns...",
+          "Aligning target context for Indian founders...",
+          "Structuring hooks & hooks variables...",
+          "Drafting 3 unique post variations..."
+        ];
+        
+        let msgIndex = 0;
+        const msgInterval = setInterval(() => {
+          if (msgIndex < messages.length - 1) {
+            msgIndex++;
+            setLoadingMessage(messages[msgIndex]);
+          }
+        }, 3000);
+
+        try {
+          if (apiProvider === 'ollama') {
+            setLoadingMessage('Checking local Ollama server status...');
+            const status = await apiRequest(`/api/ollama/status?model=${model}`);
+            
+            if (!status.running) {
+              throw new Error('Local Ollama server could not be started automatically. Please verify that Ollama is installed and run "ollama serve" manually.');
+            }
+            
+            if (!status.installed) {
+              setLoadingMessage(`Downloading ${model} to your PC (this may take a few minutes)...`);
+              await apiRequest('/api/ollama/pull', 'POST', { model });
+              setLoadingMessage('Model downloaded successfully! Commencing post drafting...');
+            }
+          }
+
+          const res = await apiRequest('/api/generate', 'POST', { topic: topicInput, style: selectedStyle });
+          
+          // Refetch user data to update stats and history logs
+          const updated = await apiRequest('/api/user');
+          setUserData(updated.user);
+          setGeneratedDrafts(res.drafts);
+        } catch (error) {
+          console.error("API Call error:", error);
+          setGenError(error.message || 'Generation failed. Make sure your configuration and credentials are correct.');
+        } finally {
+          clearInterval(msgInterval);
+          setIsLoading(false);
+        }
+      };
+
+      // ----------------------------------------------------
+      // CLIPBOARD UTILITIES
+      // ----------------------------------------------------
+      const copyToClipboard = (text, index) => {
+        navigator.clipboard.writeText(text).then(() => {
+          setCopiedIndex(index);
+          setTimeout(() => setCopiedIndex(null), 2000);
+        }).catch(err => {
+          console.error('Could not copy text: ', err);
+        });
+      };
+
+      // ----------------------------------------------------
+      // LINKEDIN PUBLISHING ACTION
+      // ----------------------------------------------------
+      const publishToLinkedIn = async (text) => {
+        setIsPublishing(true);
+        setPublishingError('');
+        setPublishSuccess(false);
+        setPublishingMessage('Connecting to LinkedIn server...');
+
+        const steps = [
+          'Checking Access Token authorization...',
+          'Formatting UGC share commentary...',
+          'Broadcasting payload to LinkedIn UGC Post API...',
+          'Success! Draft published.'
+        ];
+
+        let stepIdx = 0;
+        const interval = setInterval(() => {
+          if (stepIdx < steps.length - 1) {
+            stepIdx++;
+            setPublishingMessage(steps[stepIdx]);
+          }
+        }, 600);
+
+        try {
+          const res = await apiRequest('/api/publish', 'POST', { text });
+          clearInterval(interval);
+          setPublishingMessage('Draft published successfully!');
+          setPublishSuccess(true);
+          
+          // Refetch user profile to update stats & feed
+          const profileData = await apiRequest('/api/user');
+          setUserData(profileData.user);
+          
+          setTimeout(() => {
+            setIsPublishing(false);
+            setPublishSuccess(false);
+          }, 2500);
+        } catch (error) {
+          clearInterval(interval);
+          setPublishingError(error.message || 'Failed to publish draft. Check settings or retry.');
+        }
+      };
+
+      // ----------------------------------------------------
+      // SETTINGS PANEL ACTIONS
+      // ----------------------------------------------------
+      const handleSaveSettings = async (e) => {
+        e.preventDefault();
+        try {
+          const updatedUser = await apiRequest('/api/user/settings', 'POST', {
+            apiKey,
+            apiEndpoint,
+            apiProvider,
+            model
+          });
+          const finalUser = await apiRequest('/api/user/linkedin', 'POST', {
+            linkedinAccessToken,
+            linkedinPersonUrn
+          });
+          setUserData(finalUser);
+          setShowSettingsModal(false);
+        } catch (error) {
+          alert("Failed to save configuration: " + error.message);
+        }
+      };
+
+      const handleResetHistory = async () => {
+        if (confirm("Are you sure you want to reset all generation stats and history? This cannot be undone.")) {
+          try {
+            const updatedUser = await apiRequest('/api/history/reset', 'POST');
+            setUserData(updatedUser);
+            setShowSettingsModal(false);
+          } catch (error) {
+            alert("Failed to reset account data: " + error.message);
+          }
+        }
+      };
+
+      const getProviderDisplay = () => {
+        if (apiProvider === 'demo') {
+          if (serverConfig.hasServerClaudeKey || serverConfig.hasServerOpenRouterKey || serverConfig.hasServerGroqKey) {
+            return 'Server API Key Autodetect (Active)';
+          }
+          return 'Demo Mode (Mocked)';
+        }
+        if (apiProvider === 'anthropic') return `Claude (${model})`;
+        if (apiProvider === 'openrouter') return `OpenRouter (${model})`;
+        if (apiProvider === 'groq') return `Groq Llama (${model})`;
+        if (apiProvider === 'ollama') return `Local Llama (${model})`;
+        return '';
+      };
+
+      // UI Component Elements
+      const postsGenerated = userData ? (userData.postsGenerated || 0) : 0;
+      const postsRemaining = Math.max(0, 5 - postsGenerated);
+
+      if (isInitializing) {
+        return (
+          <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+            <div className="spinner"></div>
+            <div className="loader-message" style={{ marginTop: '16px', fontWeight: 500, color: '#555' }}>LinkedCraft — Restoring Session...</div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="app-container">
+          
+          {/* Header */}
+          {currentUser && (
+            <div className="navbar">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div className="logo" onClick={() => navigateTo('/dashboard')} style={{cursor: 'pointer'}}>
+                  LinkedCraft <span className="logo-badge">IN</span>
+                </div>
+                <nav style={{ display: 'flex', gap: '12px', marginLeft: '12px' }}>
+                  <a href="#/dashboard" style={{ fontSize: '0.85rem', fontWeight: path === '/dashboard' ? 'bold' : '500', color: '#111111', textDecoration: 'none' }}>Dashboard</a>
+                  <a href="#/feed" style={{ fontSize: '0.85rem', fontWeight: path === '/feed' ? 'bold' : '500', color: '#111111', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    Live Feed
+                    {userData && userData.publishedPosts && userData.publishedPosts.length > 0 && (
+                      <span style={{ backgroundColor: '#0077b5', color: '#fff', fontSize: '0.65rem', padding: '1px 5px', borderRadius: '10px', fontWeight: 'bold' }}>
+                        {userData.publishedPosts.length}
+                      </span>
+                    )}
+                  </a>
+                </nav>
+              </div>
+              <div className="navbar-right">
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: (userData && userData.linkedinAccessToken) ? '#0077b5' : '#666666',
+                  backgroundColor: (userData && userData.linkedinAccessToken) ? '#eef3f8' : '#f3f3f3',
+                  padding: '4px 8px',
+                  borderRadius: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  LinkedIn: {(userData && userData.linkedinAccessToken) ? 'Live Connected' : 'Simulated'}
+                </span>
+                <span className="muted" style={{fontSize: '0.85rem'}}>{currentUser}</span>
+                <button className="settings-btn" onClick={() => setShowSettingsModal(true)} title="API Settings">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+                <button className="btn btn-secondary" style={{padding: '6px 12px', fontSize: '0.8rem'}} onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* PAGE 1: LANDING PAGE */}
+          {path === '/' && (
+            <div style={{textAlign: 'center', padding: '40px 0'}}>
+              <div style={{display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontWeight: 'bold', fontSize: '1.4rem'}}>
+                ✍️ LinkedCraft <span className="logo-badge">FOR INDIAN FOUNDERS</span>
+              </div>
+              <h1>Write LinkedIn posts in your exact voice</h1>
+              <p className="muted" style={{fontSize: '1.15rem', marginBottom: '32px', lineHeight: '1.4'}}>
+                Built for Indian founders. Paste a topic, get 3 ready-to-post drafts in 30 seconds.
+              </p>
+              
+              <div style={{display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '40px'}}>
+                <button className="btn btn-primary" onClick={() => { setAuthMode('signup'); navigateTo('/signup'); }}>
+                  Get started free
+                </button>
+                <button className="btn btn-secondary" onClick={() => { setAuthMode('login'); navigateTo('/login'); }}>
+                  Log in
+                </button>
+              </div>
+
+              {/* Landing Visual Animation */}
+              <div className="landing-visual">
+                <div style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '12px'}}>
+                  <span style={{fontWeight: 'bold', color: '#111'}}><span className="pulse-dot"></span>Tone Engine: Connected</span>
+                  <span>model: claude-3-5-haiku</span>
+                </div>
+                <div style={{textAlign: 'left', fontFamily: 'inherit', color: '#222', fontSize: '0.9rem', lineHeight: '1.5'}}>
+                  <span style={{color: '#888', fontStyle: 'italic'}}>Topic: "Bootstrap lessons"</span><br/>
+                  <span style={{color: '#888', fontStyle: 'italic'}}>Style: Contrarian</span>
+                  <p style={{marginTop: '8px', borderLeft: '2px solid #111', paddingLeft: '10px', color: '#333'}}>
+                    "Unpopular opinion: Networking events are a colossal waste of time for early-stage founders. You don't need to exchange 50 business cards... The best founders are sitting in their offices talking to clients."
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PAGE 2: SIGNUP / LOGIN */}
+          {(path === '/signup' || path === '/login') && (
+            <div className="card" style={{maxWidth: '450px', margin: '40px auto', width: '100%'}}>
+              
+              <div className="auth-toggle">
+                <div 
+                  className={`auth-tab ${authMode === 'signup' ? 'active' : ''}`}
+                  onClick={() => { setAuthMode('signup'); setAuthError(''); }}
+                >
+                  Create Account
+                </div>
+                <div 
+                  className={`auth-tab ${authMode === 'login' ? 'active' : ''}`}
+                  onClick={() => { setAuthMode('login'); setAuthError(''); }}
+                >
+                  Sign In
+                </div>
+              </div>
+
+              <h3 style={{marginBottom: '20px', textAlign: 'center'}}>
+                {authMode === 'signup' ? 'Get started with LinkedCraft' : 'Welcome back to LinkedCraft'}
+              </h3>
+
+              {authError && (
+                <div className="error-alert">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  {authError}
+                </div>
+              )}
+
+              <form onSubmit={handleAuthSubmit}>
+                <div className="form-group">
+                  <label className="form-label">Email Address</label>
+                  <input 
+                    type="email" 
+                    className="form-input" 
+                    placeholder="you@startup.in"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Password</label>
+                  <input 
+                    type="password" 
+                    className="form-input" 
+                    placeholder="••••••••"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-primary btn-block" style={{marginTop: '8px'}}>
+                  {authMode === 'signup' ? 'Sign Up' : 'Log In'}
+                </button>
+              </form>
+              
+              <p className="muted" style={{textAlign: 'center', marginTop: '20px', marginBottom: 0}}>
+                {authMode === 'signup' ? (
+                  <span>Already have an account? <a href="#/login" onClick={(e) => { e.preventDefault(); setAuthMode('login'); navigateTo('/login'); }} style={{color: '#111', fontWeight: 600}}>Log in</a></span>
+                ) : (
+                  <span>New to LinkedCraft? <a href="#/signup" onClick={(e) => { e.preventDefault(); setAuthMode('signup'); navigateTo('/signup'); }} style={{color: '#111', fontWeight: 600}}>Create account</a></span>
+                )}
+              </p>
+            </div>
+          )}
+
+          {/* PAGE 3: ONBOARDING */}
+          {path === '/onboarding' && (
+            <div>
+              <h2>Set up your writing voice</h2>
+              <p className="muted" style={{marginBottom: '24px'}}>
+                Paste LinkedIn posts you've written. We analyse your style and write new posts that sound exactly like you.
+              </p>
+
+              {onboardError && (
+                <div className="error-alert">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  {onboardError}
+                </div>
+              )}
+
+              <div style={{display: 'flex', justifyContent: 'flex-end', marginBottom: '16px'}}>
+                <button type="button" className="sample-loader-btn" onClick={loadFounderSamples}>
+                  💡 Load sample founder posts for testing
+                </button>
+              </div>
+
+              <form onSubmit={handleOnboardingSubmit}>
+                <div className="form-group">
+                  <label className="form-label">Sample post 1 (Required)</label>
+                  <textarea 
+                    className="form-textarea" 
+                    placeholder="Paste a LinkedIn post you wrote..."
+                    style={{minHeight: '120px'}}
+                    value={onboardSample1}
+                    onChange={(e) => setOnboardSample1(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Sample post 2 (Required)</label>
+                  <textarea 
+                    className="form-textarea" 
+                    placeholder="Paste another LinkedIn post you wrote..."
+                    style={{minHeight: '120px'}}
+                    value={onboardSample2}
+                    onChange={(e) => setOnboardSample2(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Sample post 3 (Optional)</label>
+                  <textarea 
+                    className="form-textarea" 
+                    placeholder="Paste a third LinkedIn post (optional)..."
+                    style={{minHeight: '120px'}}
+                    value={onboardSample3}
+                    onChange={(e) => setOnboardSample3(e.target.value)}
+                  />
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="btn btn-primary btn-block" 
+                  style={{marginTop: '12px'}}
+                  disabled={!onboardSample1.trim() || !onboardSample2.trim()}
+                >
+                  Build my voice profile →
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* PAGE 4: DASHBOARD */}
+          {path === '/dashboard' && (
+            <div>
+              {/* Stats row */}
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="muted" style={{fontSize: '0.8rem', fontWeight: 600}}>Posts generated</div>
+                  <div className="stat-val">{postsGenerated}</div>
+                </div>
+                <div className="stat-card">
+                  <div className="muted" style={{fontSize: '0.8rem', fontWeight: 600}}>Plan</div>
+                  <div className="stat-val" style={{color: '#0066cc'}}>Free</div>
+                </div>
+                <div className="stat-card">
+                  <div className="muted" style={{fontSize: '0.8rem', fontWeight: 600}}>Posts remaining</div>
+                  <div className="stat-val" style={{color: postsRemaining === 0 ? '#cc0000' : 'inherit'}}>{postsRemaining}</div>
+                </div>
+              </div>
+
+              {/* Upgrade Banner if remaining is 0 */}
+              {postsRemaining === 0 && (
+                <div className="upgrade-banner">
+                  <h3>Upgrade to LinkedCraft Premium</h3>
+                  <p>You have generated your 5 free LinkedIn drafts. Upgrade to write unlimited posts in your voice.</p>
+                  <button className="btn btn-secondary" onClick={() => alert("Thank you for your interest! Stripe payment integration is coming in the next release.")}>
+                    Upgrade Plan
+                  </button>
+                </div>
+              )}
+
+              {/* Settings Provider banner feedback */}
+              <div className="warning-alert">
+                <strong>API Config:</strong> Currently operating in <strong>{getProviderDisplay()}</strong>. 
+                {apiProvider === 'demo' ? (
+                  (serverConfig.hasServerClaudeKey || serverConfig.hasServerOpenRouterKey || serverConfig.hasServerGroqKey) ? (
+                    <span> Server-wide API key is configured. Generation runs securely via the backend! Modify this configuration anytime using the gear icon.</span>
+                  ) : (
+                    <span> No API Key needed. You can change this to live Meta Llama or Claude in the settings gear at the top right.</span>
+                  )
+                ) : apiProvider === 'ollama' ? (
+                  <span> Running locally on Ollama host at <code>{serverConfig.ollamaHost}</code>. No API Key required!</span>
+                ) : (
+                  <span> Calling external API securely via the backend server.</span>
+                )}
+              </div>
+
+              {/* Generate Trigger */}
+              <div style={{marginBottom: '40px'}}>
+                <button 
+                  className="btn btn-primary btn-block" 
+                  style={{padding: '16px', fontSize: '1.1rem'}}
+                  onClick={() => navigateTo('/generate')}
+                  disabled={postsRemaining === 0}
+                >
+                  + Generate new post
+                </button>
+              </div>
+
+              {/* History list */}
+              <div>
+                <h3 style={{marginBottom: '16px'}}>Recent Drafts</h3>
+                <div className="card" style={{padding: 0, overflow: 'hidden'}}>
+                  {userData && userData.history && userData.history.length > 0 ? (
+                    userData.history.slice(0, 5).map((item) => (
+                      <div 
+                        key={item.id} 
+                        className="history-item"
+                        style={{cursor: 'pointer'}}
+                        onClick={() => setActiveHistoryItem(item)}
+                      >
+                        <div className="history-info">
+                          <div className="history-topic">{item.topic}</div>
+                          <div className="history-meta">
+                            <span>{new Date(item.timestamp).toLocaleDateString()}</span>
+                            <span className="history-style-tag">{item.style}</span>
+                          </div>
+                        </div>
+                        <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}}>
+                          View Drafts
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{padding: '32px 16px', textAlign: 'center', color: '#888888'}}>
+                      No posts generated yet. Click "+ Generate new post" to create one.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PAGE 5: GENERATE PAGE */}
+          {path === '/generate' && (
+            <div>
+              <a className="back-link" onClick={(e) => { e.preventDefault(); navigateTo('/dashboard'); }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Back to Dashboard
+              </a>
+
+              <h2>Generate a new post</h2>
+              <p className="muted" style={{marginBottom: '24px'}}>
+                Enter your topic, choose a framework style, and Claude will draft 3 posts in your tone.
+              </p>
+
+              {genError && (
+                <div className="error-alert">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  {genError}
+                </div>
+              )}
+
+              {/* Form Input fields */}
+              {!isLoading && generatedDrafts.length === 0 && (
+                <div>
+                  <div className="form-group">
+                    <label className="form-label">What do you want to post about?</label>
+                    <textarea 
+                      className="form-textarea" 
+                      style={{minHeight: '140px'}}
+                      placeholder="Paste a rough idea, a URL, a lesson you learned, anything..."
+                      value={topicInput}
+                      onChange={(e) => setTopicInput(e.target.value)}
+                    />
+                  </div>
+
+                  <label className="form-label" style={{marginBottom: '8px'}}>Select Writing Style</label>
+                  <div className="grid-2x2">
+                    <button 
+                      type="button" 
+                      className={`style-btn ${selectedStyle === 'storytelling' ? 'selected-state' : ''}`}
+                      onClick={() => setSelectedStyle('storytelling')}
+                    >
+                      <span className="style-btn-title">Storytelling</span>
+                      <span className="style-btn-desc">Personal story with a lesson</span>
+                    </button>
+                    <button 
+                      type="button" 
+                      className={`style-btn ${selectedStyle === 'insight' ? 'selected-state' : ''}`}
+                      onClick={() => setSelectedStyle('insight')}
+                    >
+                      <span className="style-btn-title">Insight List</span>
+                      <span className="style-btn-desc">3-5 sharp non-obvious points</span>
+                    </button>
+                    <button 
+                      type="button" 
+                      className={`style-btn ${selectedStyle === 'contrarian' ? 'selected-state' : ''}`}
+                      onClick={() => setSelectedStyle('contrarian')}
+                    >
+                      <span className="style-btn-title">Contrarian</span>
+                      <span className="style-btn-desc">Challenge common wisdom</span>
+                    </button>
+                    <button 
+                      type="button" 
+                      className={`style-btn ${selectedStyle === 'howto' ? 'selected-state' : ''}`}
+                      onClick={() => setSelectedStyle('howto')}
+                    >
+                      <span className="style-btn-title">How-to</span>
+                      <span className="style-btn-desc">Step-by-step practical guide</span>
+                    </button>
+                  </div>
+
+                  <button 
+                    onClick={handleGenerate} 
+                    className="btn btn-primary btn-block"
+                    style={{padding: '14px', fontSize: '1rem'}}
+                    disabled={!topicInput.trim() || postsRemaining === 0}
+                  >
+                    Generate 3 variations →
+                  </button>
+                </div>
+              )}
+
+              {/* Loading State */}
+              {isLoading && (
+                <div className="loader-container card">
+                  <div className="spinner"></div>
+                  <div className="loader-message">{loadingMessage}</div>
+                  <div className="muted" style={{fontSize: '0.8rem', fontStyle: 'italic'}}>Creating your custom drafts...</div>
+                </div>
+              )}
+
+              {/* Generation Draft outputs */}
+              {!isLoading && generatedDrafts.length > 0 && (
+                <div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                    <h3>Your Generated Drafts</h3>
+                    <button 
+                      className="btn btn-secondary" 
+                      style={{padding: '6px 12px', fontSize: '0.85rem'}}
+                      onClick={() => {
+                        setGeneratedDrafts([]);
+                        setTopicInput('');
+                      }}
+                    >
+                      Write another post
+                    </button>
+                  </div>
+
+                  {generatedDrafts.map((draftText, idx) => (
+                    <div key={idx} className="variation-card">
+                      <div className="variation-header">
+                        <span className="variation-tag">Variation {idx + 1}</span>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button 
+                            className="btn btn-secondary" 
+                            style={{padding: '6px 14px', fontSize: '0.8rem', minWidth: '90px'}}
+                            onClick={() => copyToClipboard(draftText, idx)}
+                          >
+                            {copiedIndex === idx ? 'Copied ✓' : 'Copy'}
+                          </button>
+                          <button 
+                            className="btn btn-primary" 
+                            style={{padding: '6px 14px', fontSize: '0.8rem', backgroundColor: '#0077b5', borderColor: '#0077b5', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '4px'}}
+                            onClick={() => publishToLinkedIn(draftText)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            Publish
+                          </button>
+                        </div>
+                      </div>
+                      <div className="variation-body">{draftText}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            </div>
+          )}
+
+          {/* PAGE 6: LIVE FEED PAGE */}
+          {path === '/feed' && (
+            <div>
+              <a className="back-link" onClick={(e) => { e.preventDefault(); navigateTo('/dashboard'); }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Back to Dashboard
+              </a>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div>
+                  <h2>LinkedIn Live Feed</h2>
+                  <p className="muted" style={{ marginBottom: 0 }}>
+                    Previewing posts published from your account.
+                  </p>
+                </div>
+                <button 
+                  className="btn btn-secondary" 
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  onClick={async () => {
+                    try {
+                      const res = await apiRequest('/api/user');
+                      setUserData(res.user);
+                    } catch (e) {
+                      console.error("Failed to refresh feed:", e);
+                    }
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                  Refresh Feed
+                </button>
+              </div>
+
+              {userData && userData.publishedPosts && userData.publishedPosts.length > 0 ? (
+                userData.publishedPosts.map((post) => {
+                  const ageInMinutes = Math.floor((Date.now() - post.timestamp) / 60000);
+                  const seed = post.id ? post.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 100;
+                  const baseLikes = 15 + (seed % 35);
+                  const likesGrowth = Math.min(120, Math.floor(ageInMinutes * 0.4));
+                  const likes = baseLikes + likesGrowth;
+                  const comments = Math.floor(likes * 0.15) + (seed % 4);
+                  const reposts = Math.floor(likes * 0.08) + (seed % 2);
+
+                  const userInitial = currentUser ? currentUser.charAt(0).toUpperCase() : 'U';
+                  const userName = currentUser ? currentUser.split('@')[0] : 'You';
+                  
+                  return (
+                    <div key={post.id} className="card" style={{ padding: '20px', marginBottom: '20px', border: '1px solid #e0e0e0', borderRadius: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                          <div style={{
+                            width: '48px',
+                            height: '48px',
+                            borderRadius: '50%',
+                            backgroundColor: '#0077b5',
+                            color: '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 'bold',
+                            fontSize: '1.2rem',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          }}>
+                            {userInitial}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: '700', color: '#111111', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              {userName}
+                              <span style={{ fontWeight: 'normal', color: '#666666', fontSize: '0.85rem' }}>• 1st</span>
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#666666', lineHeight: '1.2', marginTop: '2px' }}>
+                              Founder & CEO | Build in Public
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#888888', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                              <span>{formatTimeAgo(post.timestamp)}</span>
+                              <span>•</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block' }}><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                            </div>
+                          </div>
+                        </div>
+
+                        <span style={{
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          color: post.live ? '#0077b5' : '#666666',
+                          backgroundColor: post.live ? '#eef3f8' : '#f3f3f3',
+                          padding: '3px 8px',
+                          borderRadius: '12px',
+                          border: `1px solid ${post.live ? '#d0e1f0' : '#e0e0e0'}`
+                        }}>
+                          {post.live ? 'LIVE API' : 'SIMULATED'}
+                        </span>
+                      </div>
+
+                      <div style={{ 
+                        whiteSpace: 'pre-wrap', 
+                        fontSize: '0.92rem', 
+                        color: '#191919', 
+                        lineHeight: '1.5',
+                        marginBottom: '14px',
+                        fontFamily: '-apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                      }}>
+                        {post.text}
+                      </div>
+
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        paddingBottom: '10px', 
+                        borderBottom: '1px solid #eeeeee',
+                        fontSize: '0.75rem',
+                        color: '#666666'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <span style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#0077b5', color: '#fff', fontSize: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginRight: '-2px', zIndex: 3, border: '1px solid #fff' }}>👍</span>
+                            <span style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#6fcf97', color: '#fff', fontSize: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginRight: '-2px', zIndex: 2, border: '1px solid #fff' }}>👏</span>
+                            <span style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#f2c94c', color: '#fff', fontSize: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, border: '1px solid #fff' }}>💡</span>
+                          </span>
+                          <span>{likes}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <span>{comments} comments</span>
+                          <span>•</span>
+                          <span>{reposts} reposts</span>
+                        </div>
+                      </div>
+
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        paddingTop: '8px',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        color: '#666666'
+                      }}>
+                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666666', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '4px', transition: 'background-color 0.2s' }} className="feed-action-btn">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                          Like
+                        </button>
+                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666666', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '4px', transition: 'background-color 0.2s' }} className="feed-action-btn">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                          Comment
+                        </button>
+                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666666', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '4px', transition: 'background-color 0.2s' }} className="feed-action-btn">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                          Repost
+                        </button>
+                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666666', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '4px', transition: 'background-color 0.2s' }} className="feed-action-btn">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                          Send
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="card" style={{ textAlign: 'center', padding: '48px 20px', color: '#888888' }}>
+                  <span style={{ fontSize: '3rem', display: 'block', marginBottom: '16px' }}>📭</span>
+                  <h4 style={{ color: '#111111', marginBottom: '8px' }}>Your LinkedIn Feed is Empty</h4>
+                  <p className="muted" style={{ maxWidth: '400px', margin: '0 auto 20px auto', fontSize: '0.9rem' }}>
+                    You haven't published any drafts to LinkedIn yet. Generate a post variation and click "Publish to LinkedIn".
+                  </p>
+                  <button className="btn btn-primary" onClick={() => navigateTo('/generate')}>
+                    Generate & Publish
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SETTINGS MODAL */}
+          {showSettingsModal && (
+            <div className="modal-overlay" onClick={() => setShowSettingsModal(false)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close" onClick={() => setShowSettingsModal(false)}>&times;</button>
+                <h3 style={{marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                  ⚙️ API & Settings Configuration
+                </h3>
+
+                <form onSubmit={handleSaveSettings}>
+                  <div className="form-group">
+                    <label className="form-label">API Provider Mode</label>
+                    <select 
+                      className="form-input" 
+                      value={apiProvider} 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setApiProvider(val);
+                        if (val === 'openrouter') {
+                          setModel('meta-llama/llama-3.1-70b-instruct');
+                        } else if (val === 'anthropic') {
+                          setModel('claude-3-5-haiku-20241022');
+                        } else if (val === 'groq') {
+                          setModel('llama-3.3-70b-versatile');
+                        } else if (val === 'ollama') {
+                          setModel('llama3');
+                        }
+                      }}
+                      style={{padding: '10px'}}
+                    >
+                      <option value="demo">Demo Mode (Simulated AI / Server Key Fallback)</option>
+                      <option value="groq">Groq Cloud (High-speed Llama 3)</option>
+                      <option value="ollama">Ollama (Run Llama 3 100% Local & Free)</option>
+                      <option value="anthropic">Anthropic Claude API (Secure Direct proxy)</option>
+                      <option value="openrouter">OpenRouter API (Proxy)</option>
+                    </select>
+                  </div>
+
+                  {apiProvider === 'ollama' && (
+                    <div className="warning-alert" style={{ marginTop: '0', marginBottom: '20px', fontSize: '0.8rem' }}>
+                      💡 <strong>Local Server Required:</strong> To use Ollama, you must have the Ollama app installed and running locally on your computer. Run <code>ollama run llama3</code> in your terminal to start the server and pull the Llama 3 model.
+                    </div>
+                  )}
+
+                  {apiProvider !== 'demo' && apiProvider !== 'ollama' && (
+                    <div className="form-group">
+                      <label className="form-label">
+                        {apiProvider === 'anthropic' ? 'Anthropic API Key' : 
+                         apiProvider === 'groq' ? 'Groq API Key' : 'OpenRouter API Key'}
+                      </label>
+                      <input 
+                        type="password" 
+                        className="form-input" 
+                        placeholder="Paste API Key (optional if configured in .env on server)"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {apiProvider !== 'demo' && (
+                    <div className="form-group">
+                      <label className="form-label">Model Name</label>
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        placeholder={
+                          apiProvider === 'groq' ? 'e.g. llama-3.3-70b-versatile' :
+                          apiProvider === 'ollama' ? 'e.g. llama3, llama3.2' : 
+                          apiProvider === 'openrouter' ? 'e.g. meta-llama/llama-3.1-70b-instruct' : 'e.g. claude-3-5-haiku-20241022'
+                        }
+                        value={model}
+                        onChange={(e) => setModel(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {apiProvider === 'anthropic' && (
+                    <div className="form-group">
+                      <label className="form-label">API Endpoint</label>
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="https://api.anthropic.com/v1/messages"
+                        value={apiEndpoint}
+                        onChange={(e) => setApiEndpoint(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #eeeeee' }}>
+                    <h4 style={{ fontSize: '0.9rem', marginBottom: '12px', color: '#111111' }}>🔗 LinkedIn Integration Settings</h4>
+                    <p className="muted" style={{ fontSize: '0.8rem', marginBottom: '12px', lineHeight: '1.4' }}>
+                      Leave these empty to run in **Simulated Mode** (posts will go to the local Live Feed Preview). To enable real automatic sharing, enter access tokens from the LinkedIn Developer Portal.
+                    </p>
+                    
+                    <div className="form-group">
+                      <label className="form-label">LinkedIn Access Token</label>
+                      <input 
+                        type="password" 
+                        className="form-input" 
+                        placeholder="Paste OAuth Access Token (starts with AQ...)"
+                        value={linkedinAccessToken}
+                        onChange={(e) => setLinkedinAccessToken(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">LinkedIn Person URN</label>
+                      <input 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="e.g. urn:li:person:AbC123XyZ"
+                        value={linkedinPersonUrn}
+                        onChange={(e) => setLinkedinPersonUrn(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{display: 'flex', gap: '12px', marginTop: '24px'}}>
+                    <button type="submit" className="btn btn-primary" style={{flex: 1}}>
+                      Save Configuration
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={() => setShowSettingsModal(false)}>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+
+                <div style={{marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #eeeeee'}}>
+                  <h4 style={{fontSize: '0.9rem', marginBottom: '8px', color: '#cc0000'}}>System Reset</h4>
+                  <button type="button" className="btn btn-danger" style={{padding: '8px 16px', fontSize: '0.8rem'}} onClick={handleResetHistory}>
+                    Reset Account Data & History
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* HISTORICAL DRAFTS MODAL */}
+          {activeHistoryItem && (
+            <div className="modal-overlay" onClick={() => setActiveHistoryItem(null)}>
+              <div className="modal-content" style={{maxWidth: '600px'}} onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close" onClick={() => setActiveHistoryItem(null)}>&times;</button>
+                
+                <h3 style={{fontSize: '1.2rem', marginBottom: '4px'}}>{activeHistoryItem.topic}</h3>
+                <div className="history-meta" style={{marginBottom: '20px'}}>
+                  <span>Generated on {new Date(activeHistoryItem.timestamp).toLocaleString()}</span>
+                  <span className="history-style-tag">{activeHistoryItem.style}</span>
+                </div>
+
+                <div style={{maxHeight: '400px', overflowY: 'auto', paddingRight: '4px'}}>
+                  {activeHistoryItem.drafts.map((draftText, idx) => (
+                    <div key={idx} className="variation-card" style={{padding: '16px', marginBottom: '16px'}}>
+                      <div className="variation-header">
+                        <span className="variation-tag" style={{fontSize: '0.7rem'}}>Variation {idx + 1}</span>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button 
+                            className="btn btn-secondary" 
+                            style={{padding: '4px 10px', fontSize: '0.75rem', minWidth: '70px'}}
+                            onClick={() => copyToClipboard(draftText, idx)}
+                          >
+                            {copiedIndex === idx ? 'Copied ✓' : 'Copy'}
+                          </button>
+                          <button 
+                            className="btn btn-primary" 
+                            style={{padding: '4px 10px', fontSize: '0.75rem', backgroundColor: '#0077b5', borderColor: '#0077b5', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '4px'}}
+                            onClick={() => {
+                              setActiveHistoryItem(null);
+                              publishToLinkedIn(draftText);
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            Publish
+                          </button>
+                        </div>
+                      </div>
+                      <div className="variation-body" style={{fontSize: '0.9rem'}}>{draftText}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{display: 'flex', justifyContent: 'flex-end', marginTop: '16px'}}>
+                  <button className="btn btn-primary" onClick={() => setActiveHistoryItem(null)}>
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PUBLISHING OVERLAY */}
+          {isPublishing && (
+            <div className="modal-overlay" style={{ zIndex: 1100 }}>
+              <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '36px 24px' }}>
+                {!publishingError ? (
+                  <div>
+                    {publishSuccess ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                        <div style={{
+                          width: '60px',
+                          height: '60px',
+                          borderRadius: '50%',
+                          backgroundColor: '#e1f5fe',
+                          color: '#0077b5',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '2rem',
+                          fontWeight: 'bold',
+                          margin: '0 auto'
+                        }}>
+                          ✓
+                        </div>
+                        <h3 style={{ color: '#0077b5' }}>Published!</h3>
+                        <p className="muted" style={{ margin: 0 }}>{publishingMessage}</p>
+                      </div>
+                    ) : (
+                      <div className="loader-container" style={{ padding: 0 }}>
+                        <div className="spinner" style={{ borderTopColor: '#0077b5' }}></div>
+                        <div className="loader-message" style={{ color: '#0077b5', marginTop: '12px' }}>{publishingMessage}</div>
+                        <p className="muted" style={{ fontSize: '0.8rem', marginTop: '8px', fontStyle: 'italic' }}>
+                          {(userData && userData.linkedinAccessToken) ? 'Publishing to live LinkedIn Feed...' : 'Running in Simulated Mode...'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      backgroundColor: '#ffebee',
+                      color: '#cc0000',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '2rem',
+                      fontWeight: 'bold',
+                      margin: '0 auto 16px auto'
+                    }}>
+                      !
+                    </div>
+                    <h3 style={{ color: '#cc0000', marginBottom: '8px' }}>Publishing Failed</h3>
+                    <p className="muted" style={{ fontSize: '0.9rem', marginBottom: '24px' }}>{publishingError}</p>
+                    <button className="btn btn-secondary" onClick={() => setIsPublishing(false)}>
+                      Close
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <footer>
+            LinkedCraft — Built for Indian founders. Powered by Claude & React.
+          </footer>
+        </div>
+      );
+    }
+
+    // Render the React application
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+
+  </script>
+</body>
+</html>

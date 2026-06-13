@@ -1,0 +1,164 @@
+{
+  "users": [
+    {
+      "email": "test@linkedcraft.in",
+      "passwordHash": "2f8f014badfbd8e2e1ce4ec95b33f384:eb21af299f7f539b9af811268910ea3d151482e83c31749a417530656339240ee66d86dcab5770b66e2351a2d1184e1674c0070360285e6ce52249808fe2d07d",
+      "samples": [
+        "Funding is not a badge of honor. It is a debt you owe to your employees, customers, and investors. Focus on building real revenue from day one. In India, capital efficiency is not a choice, it is a superpower. Scale will naturally follow when the unit economics work. #StartupIndia #Founders",
+        "We hired our first 10 core engineers by sending raw, direct DMs on Twitter and LinkedIn. No fancy recruiter pitches, no bloated job specs. Just a simple, honest note about what we are building and why it matters. Look for missionaries, not mercenaries. Missionaries ship products; mercenaries watch the clock. #BuildingInPublic #Hiring",
+        "Indian SaaS is built differently. We don't have the luxury of burning $50M on customer acquisition. We are forced to build global-grade software with tight, hungry product teams. It makes us resilient. The next decade of tech infrastructure is going to be written out of Bangalore and Pune. #IndianSaaS #Product"
+      ],
+      "onboardingComplete": true,
+      "postsGenerated": 1,
+      "history": [
+        {
+          "id": "gen_1781268369149",
+          "topic": "The importance of customer feedback in early stage startups",
+          "style": "storytelling",
+          "timestamp": 1781268369149,
+          "drafts": [
+            "We were 3 days away from running out of cash. \n\nIt was 2021. I had pitch meetings lined up with 14 VCs. All of them rejected us. Some said the market size for \"The importance of customer feedback in early stage startups\" in SaaS was too small. Others simply ghosted.\n\nI sat with my co-founder in our tiny office, wondering how we'd pay salaries. We decided to do something radical. Instead of chasing VCs, we spent that week calling our existing customers. We offered them a 25% discount if they paid upfront for the year. \n\nBy Friday, we closed 8 deals. We generated enough cash to survive another 4 months. We didn't need the VC money.\n\nThe lesson? Your customers are your best investors. Don't build to impress pitch decks. Build to solve actual bottlenecks around \"The importance of customer feedback in early stage startups\". That is how sustainable empires are built. #The importance of customer feedback in early stage startups #Founders",
+            "Yesterday, a junior engineer broke our main production database.\n\nFor 45 minutes, our dashboard was down. Over 200 active users were staring at error screens. My phone was buzzing continuously. \n\nIn many startups, this is where the blame game starts. People panic. Slack threads get toxic. \n\nBut we did the opposite. We got on a huddle, patched the migration script, and got back online. Then, we wrote a public post-mortem document. No finger-pointing. We simply redesigned the access credentials so it couldn't happen again.\n\nIf your team is afraid of making mistakes, they will stop shipping. Psychological safety isn't a corporate HR buzzword. It's the engine of speed. #Engineering #StartupLife",
+            "We built a product for 6 months without showing it to a single customer. \n\nWe thought it was perfect. Beautiful code, gorgeous UI, smooth animations. We launched it with a big announcement. \n\nTotal signup count on day one? 14 people. Active users after a week? Zero.\n\nIt was a painful pill to swallow. We had built something we wanted, not what the market actually needed. We threw out 70% of the code and spent the next month interviewing founders. \n\nIf you are not embarrassed by the first version of your product, you launched too late. Build in public. Let your users co-design with you from day zero. #ProductDevelopment #Lessons"
+          ]
+        }
+      ],
+      "apiKey": "",
+      "apiEndpoint": "https://api.anthropic.com/v1/messages",
+      "apiProvider": "ollama",
+      "model": "llama3"
+    },
+    {
+      "email": "letheshsudhakar@gmail.com",
+      "passwordHash": "7fde8755c6e6cb5d907d2769064c1f0f:d07d10ae041225ed8a23b5b7a96a718f1d0ef6a44b3415fd1288cd54ec4295127fb86737b3a2ed81aab9916fe9bd2995230639e241a46456f24dc57e9032b2cf",
+      "samples": [
+        "🚀 Building something I wish existed when I started.\n\nIndia has 1.4 billion people and millions of talented individuals — yet unemployment keeps rising. Not because the talent isn't there. But because the right platform isn't.\n\nIntroducing Upzeal — \"Prove Your Skills. Get Hired.\"\n\nNo more getting ignored because of your college name or city. No more fake job listings. No more applying into the void.\n\nUpzeal is a career platform built for every Indian — from first internship to full-time career — where your skills do the talking.",
+        "Late nights. Endless iterations. Countless decisions.\nBehind every product is a story that most people never see.\nThe brainstorming sessions that stretch for hours. The features that get built and rebuilt. The moments of doubt, excitement, and determination that come with creating something from scratch.\nOver the past few months, we've been working on something exciting at Upzeal.\nWe're building a platform designed to help people showcase what they can actually do—not just what's written on a resume. A place where skills, projects, achievements, and real-world experience can open doors to opportunities.\nEvery day brings a new challenge. Every week brings a new lesson. But with each iteration, the vision becomes clearer.\nThis is still just the beginning. There is a lot more to build, improve, and learn. But seeing an idea slowly transform into a working product is one of the most rewarding parts of the journey.\nTo everyone building something of their own: keep going. Progress is often invisible until one day it isn't.\nWe're cooking something special. 🚀\nStay tuned."
+      ],
+      "onboardingComplete": true,
+      "postsGenerated": 3,
+      "history": [
+        {
+          "id": "gen_1781282723244",
+          "topic": "anthropic",
+          "style": "insight",
+          "timestamp": 1781282723244,
+          "drafts": [
+            "The universe is full of mysteries, but one stands out - why do we exist at all? It's not just a philosophical question; it has profound implications for our understanding of reality.\n\nTake, for instance, the concept of anthropic bias. This idea suggests that the very fact that we exist in a universe with conditions suitable for life is evidence that the fundamental constants had to be \"just right\" for us to evolve and observe them. It's as if the universe was designed specifically for our existence - but who or what could have done the designing?\n\nThis thought experiment has far-reaching consequences, from redefining our understanding of the multiverse to questioning the notion of a \"prime reality.\" As we navigate the complexities of human existence, it's essential to confront the anthropic bias head-on and consider its implications for our pursuit of knowledge.\n\n#AnthropicBias #PhilosophyOfScience",
+            "What if I told you that the universe is not just a collection of particles and forces, but a carefully crafted narrative? That the fundamental laws of physics are merely the scriptwriters' guide to creating a reality that's both fascinating and predictable?\n\nThis idea might seem far-fetched, but consider the anthropic principle. If we were to rewind time to the moment of the universe's creation, it's unlikely that conditions would be exactly right for life as we know it. And yet, here we are - existing in a reality that's tailor-made for our existence.\n\nThe implications are staggering. It challenges our understanding of causality, free will, and even the concept of time itself. As entrepreneurs and innovators, we're often driven by the pursuit of creating a better future. But what if that future was predetermined? Shouldn't we be exploring the narrative behind the universe instead?",
+            "We often talk about the importance of serendipity in innovation - stumbling upon unexpected connections or breakthroughs that change the game. But what if I told you that our very existence is a form of serendipity?\n\nThe anthropic principle suggests that the universe had to be \"just right\" for us to exist. It's as if we're living in a vast, intricate puzzle, and the pieces just happened to fall into place in such a way that we could observe them. But what about the notion that our existence is not just a product of chance, but an integral part of the universe's design?\n\nThis idea challenges our understanding of free will and agency. Are we truly in control of our actions, or are they merely a chapter in the grand narrative of the universe? As entrepreneurs and innovators, we're often driven by the pursuit of making a meaningful impact. But what if that impact was predetermined from the very beginning?\n\n(Note: I've avoided using emojis, hashtags with \"game-changer\" or similar phrases, and kept the tone consistent with the founder's writing style.)"
+          ]
+        },
+        {
+          "id": "gen_1781282297558",
+          "topic": "lets talk about claude's new ai models",
+          "style": "storytelling",
+          "timestamp": 1781282297558,
+          "drafts": [
+            "As I sat in my small apartment, staring at lines of code and trying to make sense of it all, I couldn't help but think about Claude, the brilliant mathematician who had spent years developing AI models. His work was a mystery to me then, but as I delved deeper into building Upzeal's career platform, I began to understand the power of his creations. Our latest breakthrough is in AI-powered skill assessments, designed to accurately evaluate candidates based on their actual abilities, not just what they claim on their resume. It's been a wild ride getting here, and I'm grateful for Claude's groundbreaking work that has enabled us to take this giant leap forward.",
+            "I still remember the countless hours spent pouring over research papers, trying to wrap my head around the complexities of AI models. And then it hit me - the realization that our own platform was going to be built on top of Claude's innovative work. It's funny how life works out sometimes. As I reflect on our journey so far, I'm struck by the parallels between building a product and raising a child. Both require patience, persistence, and a willingness to learn from failures. And just as parents don't claim credit for their children's achievements, neither do we at Upzeal. Our new AI models are the culmination of Claude's tireless efforts, and we're honored to be the ones bringing them to life.",
+            "The phrase \"it takes a village\" has always resonated with me, especially when it comes to building something as ambitious as Upzeal. From the early days of brainstorming sessions to the late nights spent coding, we've been fortunate to have an incredible team behind us. And then there's Claude, whose AI models are the unsung heroes that power our platform. As I look back on the past few months, I'm reminded of the countless decisions that went into designing and refining these models. It's a testament to the power of collaboration and innovation when like-minded individuals come together to create something truly remarkable."
+          ]
+        },
+        {
+          "id": "gen_1781282097616",
+          "topic": "linked in",
+          "style": "storytelling",
+          "timestamp": 1781282097616,
+          "drafts": [
+            "As I sit here, reflecting on my journey as an entrepreneur, one thought keeps recurring - what if I had a platform like LinkedIn when I was just starting out? The struggles I faced in building connections and finding opportunities would have been greatly reduced. But, it's not just about me. I believe that every Indian deserves a platform that empowers them to showcase their skills and connect with like-minded individuals. That's why we're working on Upzeal - a career platform designed for every Indian, where your skills do the talking.",
+            "I still remember the countless nights spent scouring job boards and networking events, only to end up applying to jobs that didn't quite fit my skills or interests. It was as if I was invisible, a ghost candidate floating through the system. But what if there was a platform that allowed me to showcase my projects, achievements, and real-world experience? A place where skills, not just college degrees or city names, opened doors to opportunities? That's precisely why we're building Upzeal - to democratize access to job opportunities for every Indian.",
+            "As I look back on the early days of my startup, I'm struck by how much time and energy I wasted trying to crack the code of online networking. Building connections was like searching for a needle in a haystack - you never knew who would respond or what kind of opportunities would arise. But then I stumbled upon LinkedIn, and everything changed. It wasn't just about building a network; it was about showcasing my skills and expertise. And that's exactly what we're aiming to achieve with Upzeal - a platform where every Indian can prove their skills and get hired."
+          ]
+        }
+      ],
+      "apiKey": "",
+      "apiEndpoint": "https://api.anthropic.com/v1/messages",
+      "apiProvider": "ollama",
+      "model": "llama3"
+    },
+    {
+      "email": "publisher@test.com",
+      "passwordHash": "b40ed1cce74340b46e9f6211c2b5df26:48671520a104ec2eca3fa309416fff19d8536d1456c17e827d60c653e76675e83ccf6fd2cf6a8b820d20750dff731f3e1bd27a8159c7e2ce16556054205c1bd1",
+      "samples": [
+        "Funding is not a badge of honor. It is a debt you owe to your employees, customers, and investors. Focus on building real revenue from day one. In India, capital efficiency is not a choice, it is a superpower. Scale will naturally follow when the unit economics work. #StartupIndia #Founders",
+        "We hired our first 10 core engineers by sending raw, direct DMs on Twitter and LinkedIn. No fancy recruiter pitches, no bloated job specs. Just a simple, honest note about what we are building and why it matters. Look for missionaries, not mercenaries. Missionaries ship products; mercenaries watch the clock. #BuildingInPublic #Hiring",
+        "Indian SaaS is built differently. We don't have the luxury of burning $50M on customer acquisition. We are forced to build global-grade software with tight, hungry product teams. It makes us resilient. The next decade of tech infrastructure is going to be written out of Bangalore and Pune. #IndianSaaS #Product"
+      ],
+      "onboardingComplete": true,
+      "postsGenerated": 1,
+      "history": [
+        {
+          "id": "gen_1781282920558",
+          "topic": "How customer feedback saved our SaaS startup",
+          "style": "storytelling",
+          "timestamp": 1781282920558,
+          "drafts": [
+            "We were 3 days away from running out of cash. \n\nIt was 2021. I had pitch meetings lined up with 14 VCs. All of them rejected us. Some said the market size for \"How customer feedback saved our SaaS startup\" in SaaS was too small. Others simply ghosted.\n\nI sat with my co-founder in our tiny office, wondering how we'd pay salaries. We decided to do something radical. Instead of chasing VCs, we spent that week calling our existing customers. We offered them a 25% discount if they paid upfront for the year. \n\nBy Friday, we closed 8 deals. We generated enough cash to survive another 4 months. We didn't need the VC money.\n\nThe lesson? Your customers are your best investors. Don't build to impress pitch decks. Build to solve actual bottlenecks around \"How customer feedback saved our SaaS startup\". That is how sustainable empires are built. #How customer feedback saved our SaaS startup #Founders",
+            "Yesterday, a junior engineer broke our main production database.\n\nFor 45 minutes, our dashboard was down. Over 200 active users were staring at error screens. My phone was buzzing continuously. \n\nIn many startups, this is where the blame game starts. People panic. Slack threads get toxic. \n\nBut we did the opposite. We got on a huddle, patched the migration script, and got back online. Then, we wrote a public post-mortem document. No finger-pointing. We simply redesigned the access credentials so it couldn't happen again.\n\nIf your team is afraid of making mistakes, they will stop shipping. Psychological safety isn't a corporate HR buzzword. It's the engine of speed. #Engineering #StartupLife",
+            "We built a product for 6 months without showing it to a single customer. \n\nWe thought it was perfect. Beautiful code, gorgeous UI, smooth animations. We launched it with a big announcement. \n\nTotal signup count on day one? 14 people. Active users after a week? Zero.\n\nIt was a painful pill to swallow. We had built something we wanted, not what the market actually needed. We threw out 70% of the code and spent the next month interviewing founders. \n\nIf you are not embarrassed by the first version of your product, you launched too late. Build in public. Let your users co-design with you from day zero. #ProductDevelopment #Lessons"
+          ]
+        }
+      ],
+      "apiKey": "",
+      "apiEndpoint": "https://api.anthropic.com/v1/messages",
+      "apiProvider": "demo",
+      "model": "claude-haiku-4-5"
+    },
+    {
+      "email": "testuser@gmail.com",
+      "passwordHash": "ce1a26eb86a423ba998388217f3b8dd5:f6e46247154d2d43fb479df7c0691b5ae80e521af21b0d78aa3e155c512fb70a7af57ea3b80818e29722fa2c558d5af56615b161aef40438bcc76b167c163c6c",
+      "samples": [
+        "Funding is not a badge of honor. It is a debt you owe to your employees, customers, and investors. Focus on building real revenue from day one. In India, capital efficiency is not a choice, it is a superpower. Scale will naturally follow when the unit economics work. #StartupIndia #Founders",
+        "We hired our first 10 core engineers by sending raw, direct DMs on Twitter and LinkedIn. No fancy recruiter pitches, no bloated job specs. Just a simple, honest note about what we are building and why it matters. Look for missionaries, not mercenaries. Missionaries ship products; mercenaries watch the clock. #BuildingInPublic #Hiring",
+        "Indian SaaS is built differently. We don't have the luxury of burning $50M on customer acquisition. We are forced to build global-grade software with tight, hungry product teams. It makes us resilient. The next decade of tech infrastructure is going to be written out of Bangalore and Pune. #IndianSaaS #Product"
+      ],
+      "onboardingComplete": true,
+      "postsGenerated": 2,
+      "history": [
+        {
+          "id": "gen_1781284879646",
+          "topic": "The future of remote work",
+          "style": "contrarian",
+          "timestamp": 1781284879646,
+          "drafts": [
+            "Unpopular opinion: Networking events are a colossal waste of time for early-stage founders.\n\nYou don't need to exchange 50 business cards, drink lukewarm coffee at a tech summit, or listen to panel discussions about \"industry trends.\" \n\nThe best founders I know are invisible. They aren't at mixers. They are sitting in their offices, talking to users, writing code, and hiring talent. \n\nIf your product is great, you don't need to network. Customers will seek you out. If your product is broken, no amount of networking will save your business. \n\nStop networking. Start building. #StartupTips #Focus",
+            "Work-life balance is a myth during the first 24 months of starting a company.\n\nYou can read all the wellness newsletters you want, but the reality of building a business from zero is brutal. It demands extreme obsession. You will think about your product in the shower, on weekends, and at dinners.\n\nIf you want a standard 9-to-6 routine, do not start a company. Join a mid-sized organization. Both paths are completely valid, but pretending you can build a category-defining startup while working 35 hours a week is selling a lie.\n\nObsession is the price of entry. #FounderReality #Startups",
+            "Stop looking for a co-founder. Just start building alone.\n\nI see so many aspiring builders delay their launch by 12 months because they \"can't find a technical co-founder\" or \"need a marketing head.\"\n\nThis is just a sophisticated form of procrastination. If you can't code, use no-code tools or build a manual concierge service. If you can't sell, learn to write. \n\nOnce you get your first 10 paying customers, finding a co-founder becomes easy because you have proof of concept. Momentum attracts partners. Standing still does not. #Solopreneur #Entrepreneurship"
+          ]
+        },
+        {
+          "id": "gen_1781284703083",
+          "topic": "How to use AI to improve productivity in coding.",
+          "style": "storytelling",
+          "timestamp": 1781284703083,
+          "drafts": [
+            "We were 3 days away from running out of cash. \n\nIt was 2021. I had pitch meetings lined up with 14 VCs. All of them rejected us. Some said the market size for \"How to use AI to improve productivity in coding.\" in India was too small. Others simply ghosted.\n\nI sat with my co-founder in our tiny office, wondering how we'd pay salaries. We decided to do something radical. Instead of chasing VCs, we spent that week calling our existing customers. We offered them a 25% discount if they paid upfront for the year. \n\nBy Friday, we closed 8 deals. We generated enough cash to survive another 4 months. We didn't need the VC money.\n\nThe lesson? Your customers are your best investors. Don't build to impress pitch decks. Build to solve actual bottlenecks around \"How to use AI to improve productivity in coding.\". That is how sustainable empires are built. #How to use AI to improve productivity in coding. #Founders",
+            "Yesterday, a junior engineer broke our main production database.\n\nFor 45 minutes, our dashboard was down. Over 200 active users were staring at error screens. My phone was buzzing continuously. \n\nIn many startups, this is where the blame game starts. People panic. Slack threads get toxic. \n\nBut we did the opposite. We got on a huddle, patched the migration script, and got back online. Then, we wrote a public post-mortem document. No finger-pointing. We simply redesigned the access credentials so it couldn't happen again.\n\nIf your team is afraid of making mistakes, they will stop shipping. Psychological safety isn't a corporate HR buzzword. It's the engine of speed. #Engineering #StartupLife",
+            "We built a product for 6 months without showing it to a single customer. \n\nWe thought it was perfect. Beautiful code, gorgeous UI, smooth animations. We launched it with a big announcement. \n\nTotal signup count on day one? 14 people. Active users after a week? Zero.\n\nIt was a painful pill to swallow. We had built something we wanted, not what the market actually needed. We threw out 70% of the code and spent the next month interviewing founders. \n\nIf you are not embarrassed by the first version of your product, you launched too late. Build in public. Let your users co-design with you from day zero. #ProductDevelopment #Lessons"
+          ]
+        }
+      ],
+      "linkedinAccessToken": "",
+      "linkedinPersonUrn": "",
+      "publishedPosts": [
+        {
+          "id": "post_1781284890930",
+          "text": "Unpopular opinion: Networking events are a colossal waste of time for early-stage founders.\n\nYou don't need to exchange 50 business cards, drink lukewarm coffee at a tech summit, or listen to panel discussions about \"industry trends.\" \n\nThe best founders I know are invisible. They aren't at mixers. They are sitting in their offices, talking to users, writing code, and hiring talent. \n\nIf your product is great, you don't need to network. Customers will seek you out. If your product is broken, no amount of networking will save your business. \n\nStop networking. Start building. #StartupTips #Focus",
+          "timestamp": 1781284890930,
+          "live": false,
+          "status": "success",
+          "linkedinPostId": "urn:li:share:1365094"
+        },
+        {
+          "id": "post_1781284714194",
+          "text": "We were 3 days away from running out of cash. \n\nIt was 2021. I had pitch meetings lined up with 14 VCs. All of them rejected us. Some said the market size for \"How to use AI to improve productivity in coding.\" in India was too small. Others simply ghosted.\n\nI sat with my co-founder in our tiny office, wondering how we'd pay salaries. We decided to do something radical. Instead of chasing VCs, we spent that week calling our existing customers. We offered them a 25% discount if they paid upfront for the year. \n\nBy Friday, we closed 8 deals. We generated enough cash to survive another 4 months. We didn't need the VC money.\n\nThe lesson? Your customers are your best investors. Don't build to impress pitch decks. Build to solve actual bottlenecks around \"How to use AI to improve productivity in coding.\". That is how sustainable empires are built. #How to use AI to improve productivity in coding. #Founders",
+          "timestamp": 1781284714194,
+          "live": false,
+          "status": "success",
+          "linkedinPostId": "urn:li:share:4784289"
+        }
+      ]
+    }
+  ]
+}
