@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LinkedCraft — Write LinkedIn posts in your exact voice</title>
-  <meta name="description" content="AI-powered LinkedIn post generator built for Indian founders. Paste a topic, get 3 ready-to-post drafts in 30 seconds.">
+  <title>LinkedCraft — Your AI LinkedIn Growth Manager</title>
+  <meta name="description" content="Train LinkedCraft on your writing style. Generate authentic posts, plan a 30-day calendar, analyze your branding, and grow your LinkedIn audience.">
   
   <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✍️</text></svg>">
@@ -16,159 +16,342 @@
   <!-- Babel Standalone to compile JSX on the fly in the browser -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
-  <!-- Plus Jakarta Sans Font for premium typography -->
+  <!-- Google Fonts: Inter and Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
+  <!-- Markdown Renderer for Profile Audits and Chat bubbles -->
+  <script src="https://unpkg.com/marked@4.3.0/marked.min.js"></script>
+
   <style>
     /* ----------------------------------------------------
-       DESIGN SYSTEM & RESET (VANILLA CSS)
+       THEMING SYSTEM (VANILLA CSS VARIABLES)
+       ---------------------------------------------------- */
+    :root {
+      --font-heading: 'Plus Jakarta Sans', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      
+      /* Light Mode Palette */
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f1f5f9;
+      --border-color: #e2e8f0;
+      
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      
+      --accent-primary: #0077b5; /* LinkedIn Blue */
+      --accent-hover: #005f92;
+      --accent-light: #eef3f8;
+      --accent-success: #10b981;
+      --accent-danger: #ef4444;
+      --accent-warning: #f59e0b;
+      
+      --card-bg: #ffffff;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #94a3b8;
+      --sidebar-active-text: #ffffff;
+      --sidebar-active-bg: #1e293b;
+      
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+    }
+
+    body.dark-theme {
+      /* Dark Mode Palette */
+      --bg-primary: #090d16;
+      --bg-secondary: #0f172a;
+      --bg-tertiary: #1e293b;
+      --border-color: #1e293b;
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --accent-primary: #38bdf8; /* Vibrant light blue */
+      --accent-hover: #7dd3fc;
+      --accent-light: #0c4a6e;
+      
+      --card-bg: #0f172a;
+      --sidebar-bg: #070a13;
+      --sidebar-text: #64748b;
+      --sidebar-active-text: #f8fafc;
+      --sidebar-active-bg: #0f172a;
+      
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ----------------------------------------------------
+       GLOBAL RESETS
        ---------------------------------------------------- */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background-color: #fafafa;
-      color: #111111;
-      line-height: 1.5;
+      font-family: var(--font-body);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    /* Max content width, centered layout */
-    .app-container {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 48px 24px;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
-    /* Cards */
-    .card {
-      background-color: #ffffff;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-      transition: all 0.2s ease;
-    }
-    
-    .card:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    }
-
-    /* Typography */
-    h1, h2, h3, h4 {
-      font-weight: 600;
-      color: #111111;
+    h1, h2, h3, h4, h5 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      color: var(--text-primary);
       letter-spacing: -0.02em;
     }
-    
-    h1 {
-      font-size: 2.25rem;
-      line-height: 1.2;
-      margin-bottom: 12px;
-    }
-    
-    h2 {
-      font-size: 1.5rem;
-      line-height: 1.3;
-      margin-bottom: 16px;
-    }
-    
+
     p {
-      color: #333333;
+      color: var(--text-secondary);
+    }
+
+    a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* ----------------------------------------------------
+       LAYOUT HOUSING
+       ---------------------------------------------------- */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .workspace-content {
+      padding: 32px 40px;
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 900px) {
+      .app-layout {
+        flex-direction: column;
+      }
+      .workspace-content {
+        padding: 24px 16px;
+      }
+    }
+
+    /* ----------------------------------------------------
+       SIDEBAR NAVIGATION
+       ---------------------------------------------------- */
+    .sidebar {
+      width: 260px;
+      background-color: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      padding: 28px 20px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border-color);
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        width: 100%;
+        padding: 16px;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+      }
+    }
+
+    .sidebar-brand {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 36px;
+    }
+
+    .sidebar-brand span {
+      background-color: var(--accent-primary);
+      color: #ffffff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .sidebar-menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--sidebar-text);
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-link:hover {
+      color: var(--sidebar-active-text);
+      background-color: var(--sidebar-active-bg);
+    }
+
+    .sidebar-link.active {
+      color: var(--sidebar-active-text);
+      background-color: var(--sidebar-active-bg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .sidebar-footer {
+        margin-top: 12px;
+        flex-direction: row;
+        border-top: none;
+        align-items: center;
+      }
+    }
+
+    /* ----------------------------------------------------
+       COMPONENTS: CARDS, BUTTONS & FORMS
+       ---------------------------------------------------- */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      position: relative;
+    }
+    
+    .card-title {
+      font-size: 1.15rem;
       margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .muted {
-      color: #666666;
-      font-size: 0.9rem;
-    }
-
-    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 500;
-      padding: 10px 24px;
-      border-radius: 8px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      transition: all 0.2s ease;
-      text-decoration: none;
-      outline: none;
+      border: 1px solid transparent;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       gap: 8px;
-      width: auto;
-    }
-
-    .btn-block {
-      display: flex;
-      width: 100%;
     }
 
     .btn-primary {
-      background-color: #111111;
+      background-color: var(--accent-primary);
       color: #ffffff;
-      border: 1px solid #111111;
     }
-
     .btn-primary:hover:not(:disabled) {
-      background-color: #222222;
-      border-color: #222222;
+      background-color: var(--accent-hover);
       transform: translateY(-1px);
     }
-
-    .btn-primary:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
     .btn-primary:disabled {
-      background-color: #cccccc;
-      border-color: #cccccc;
-      color: #888888;
+      opacity: 0.5;
       cursor: not-allowed;
     }
 
     .btn-secondary {
-      background-color: #ffffff;
-      color: #111111;
-      border: 1px solid #dddddd;
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-color: var(--border-color);
     }
-
     .btn-secondary:hover:not(:disabled) {
-      background-color: #f7f7f7;
-      border-color: #cccccc;
+      background-color: var(--border-color);
     }
 
-    .btn-secondary:disabled {
-      background-color: #fafafa;
-      color: #bbbbbb;
-      border-color: #eeeeee;
-      cursor: not-allowed;
+    .btn-outline {
+      background-color: transparent;
+      color: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+    .btn-outline:hover {
+      background-color: var(--accent-light);
     }
 
     .btn-danger {
-      background-color: #ffffff;
-      color: #cc0000;
-      border: 1px solid #fca5a5;
+      background-color: var(--accent-danger);
+      color: #ffffff;
+    }
+    .btn-danger:hover {
+      opacity: 0.9;
     }
 
-    .btn-danger:hover:not(:disabled) {
-      background-color: #fff0f0;
-    }
-
-    /* Input elements */
     .form-group {
       margin-bottom: 20px;
     }
@@ -178,339 +361,371 @@
       font-size: 0.85rem;
       font-weight: 600;
       margin-bottom: 8px;
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #333333;
     }
 
-    .form-input, .form-textarea {
+    .form-control {
       width: 100%;
       font-family: inherit;
       font-size: 0.95rem;
       padding: 12px;
-      border: 1px solid #dddddd;
-      border-radius: 8px;
-      background-color: #ffffff;
-      color: #111111;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
       outline: none;
-      transition: all 0.2s ease;
+    }
+    .form-control:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 2px var(--accent-light);
     }
 
-    .form-input:focus, .form-textarea:focus {
-      border: 2px solid #111111;
-      padding: 11px; /* adjust for border thickness to prevent layout shift */
+    /* ----------------------------------------------------
+       THEME ACCENTS & NOTIFICATIONS
+       ---------------------------------------------------- */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .badge-pro {
+      background-color: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fde68a;
+    }
+    body.dark-theme .badge-pro {
+      background-color: #78350f;
+      color: #fde68a;
+    }
+    .badge-free {
+      background-color: #f1f5f9;
+      color: #475569;
     }
 
-    .form-textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
+    .badge-success { background-color: #d1fae5; color: #065f46; }
+    .badge-warning { background-color: #fef3c7; color: #92400e; }
+    .badge-info { background-color: #e0f2fe; color: #075985; }
 
-    /* Selected state */
-    .selected-state {
-      border: 2px solid #111111 !important;
-    }
-
-    /* Error state card/alert */
-    .error-alert {
-      background-color: #fff0f0;
-      color: #cc0000;
-      border: 1px solid #fca5a5;
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
+    /* Alert cards */
+    .alert {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+      border: 1px solid transparent;
+      display: flex;
+      gap: 12px;
       font-size: 0.9rem;
+    }
+    .alert-warning {
+      background-color: #fffbeb;
+      color: #92400e;
+      border-color: #fde68a;
+    }
+    body.dark-theme .alert-warning {
+      background-color: #1e1b4b;
+      color: #f3e8ff;
+      border-color: #312e81;
+    }
+    .alert-error {
+      background-color: #fef2f2;
+      color: #991b1b;
+      border-color: #fca5a5;
+    }
+
+    /* ----------------------------------------------------
+       TOAST SYSTEM
+       ---------------------------------------------------- */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 10000;
+    }
+
+    .toast {
+      background-color: var(--text-primary);
+      color: var(--bg-primary);
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
       display: flex;
       align-items: center;
       gap: 8px;
+      animation: slideIn 0.25s ease-out;
     }
 
-    /* Warning alert style */
-    .warning-alert {
-      background-color: #fffbeb;
-      color: #b45309;
-      border: 1px solid #fde68a;
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
-      font-size: 0.85rem;
-      line-height: 1.4;
+    @keyframes slideIn {
+      from { transform: translateY(100%) scale(0.9); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
     }
 
-    /* Navigation Bar */
-    .navbar {
+    /* ----------------------------------------------------
+       PAGE VIEW ARCHITECTURE
+       ---------------------------------------------------- */
+    .view-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px;
-      background-color: #ffffff;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
       margin-bottom: 32px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 16px;
     }
 
-    .logo {
-      font-weight: 700;
-      font-size: 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .logo-badge {
-      background-color: #111111;
-      color: #ffffff;
-      font-size: 0.65rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-
-    .navbar-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    /* Grids & Layout Helpers */
-    .grid-2x2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    @media (max-width: 480px) {
-      .grid-2x2 {
-        grid-template-columns: 1fr;
-      }
-      .stats-grid {
-        grid-template-columns: 1fr !important;
-      }
-      .navbar {
-        flex-direction: column;
-        gap: 12px;
-        align-items: flex-start;
-      }
-      .navbar-right {
-        width: 100%;
-        justify-content: space-between;
-      }
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-
-    /* Individual Stat Card */
-    .stat-card {
-      background-color: #ffffff;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .stat-val {
+    .view-title {
       font-size: 1.8rem;
-      font-weight: 700;
-      color: #111111;
-      margin-top: 4px;
     }
 
-    /* Style Selector Buttons */
-    .style-btn {
-      background-color: #ffffff;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      padding: 16px;
-      text-align: left;
+    /* Landing Page Styling */
+    .landing-hero {
+      text-align: center;
+      padding: 80px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .landing-hero h1 {
+      font-size: 3.25rem;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .landing-hero p {
+      font-size: 1.25rem;
+      margin-bottom: 36px;
+      color: var(--text-secondary);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin: 48px 0;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+      margin: 64px 0;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .pricing-card {
+      border: 2px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .pricing-card.premium {
+      border-color: var(--accent-primary);
+    }
+    .pricing-price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin: 20px 0;
+    }
+
+    /* Chat agent style */
+    .chat-layout {
+      display: flex;
+      height: calc(100vh - 180px);
+      gap: 20px;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .chat-threads {
+      width: 250px;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-primary);
+    }
+
+    .thread-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .thread-item {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-color);
       cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
       transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      outline: none;
-    }
-
-    .style-btn:hover {
-      border-color: #888888;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-
-    .style-btn-title {
-      font-weight: 600;
-      font-size: 1rem;
-      color: #111111;
-    }
-
-    .style-btn-desc {
-      font-size: 0.8rem;
-      color: #666666;
-    }
-
-    /* Variation Cards */
-    .variation-card {
-      position: relative;
-      background-color: #ffffff;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      padding: 24px;
-      margin-bottom: 24px;
-    }
-
-    .variation-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      border-bottom: 1px solid #f0f0f0;
-      padding-bottom: 8px;
-    }
-
-    .variation-tag {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #666666;
-      background-color: #f0f0f0;
-      padding: 2px 8px;
-      border-radius: 4px;
-    }
-
-    .variation-body {
-      white-space: pre-wrap;
-      font-size: 0.95rem;
-      color: #222222;
-      line-height: 1.6;
-    }
-
-    /* Onboarding Helpers */
-    .sample-loader-btn {
-      font-size: 0.8rem;
-      color: #111111;
-      background: none;
-      border: none;
-      text-decoration: underline;
-      cursor: pointer;
-      padding: 0;
-      font-weight: 500;
-    }
-
-    .sample-loader-btn:hover {
-      color: #555555;
-    }
-
-    /* Loading Overlay */
-    .loader-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 0;
-      gap: 16px;
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #111111;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .loader-message {
-      font-size: 0.95rem;
-      color: #555555;
-      font-weight: 500;
-      animation: pulse 1.5s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 1; }
-    }
-
-    /* History List Items */
-    .history-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px;
-      border-bottom: 1px solid #eeeeee;
-    }
-
-    .history-item:last-child {
-      border-bottom: none;
-    }
-
-    .history-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      max-width: 75%;
-    }
-
-    .history-topic {
-      font-weight: 500;
-      font-size: 0.95rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .thread-item:hover, .thread-item.active {
+      background-color: var(--bg-secondary);
+      color: var(--accent-primary);
+    }
 
-    .history-meta {
-      font-size: 0.75rem;
-      color: #777777;
+    .chat-window {
+      flex: 1;
       display: flex;
-      gap: 8px;
-      align-items: center;
+      flex-direction: column;
+      min-width: 0;
     }
 
-    .history-style-tag {
-      background-color: #fafafa;
-      border: 1px solid #e5e5e5;
-      padding: 1px 6px;
-      border-radius: 4px;
+    .chat-messages {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message-bubble {
+      max-width: 75%;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .message-bubble.user {
+      align-self: flex-end;
+      background-color: var(--accent-primary);
+      color: #ffffff;
+      border-bottom-right-radius: 2px;
+    }
+    .message-bubble.assistant {
+      align-self: flex-start;
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-bottom-left-radius: 2px;
+    }
+    .message-bubble p {
+      color: inherit;
+      margin-bottom: 8px;
+    }
+    .message-bubble p:last-child {
+      margin-bottom: 0;
+    }
+
+    .chat-input-area {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Post generation preview boxes in Chat bubble */
+    .draft-preview-box {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 12px;
+      font-size: 0.85rem;
+    }
+
+    /* Content calendar list style */
+    .calendar-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .calendar-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background-color: var(--card-bg);
+    }
+    .calendar-date-badge {
+      text-align: center;
+      min-width: 80px;
+      padding: 10px;
+      background-color: var(--bg-tertiary);
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+    }
+    .calendar-date-day {
+      font-size: 1.25rem;
+      display: block;
+      line-height: 1;
+    }
+    .calendar-date-month {
       font-size: 0.7rem;
+      text-transform: uppercase;
+      color: var(--text-secondary);
     }
 
-    /* Modal / Overlay Dialog */
+    /* Analytics styles */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-box {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--accent-primary);
+      margin: 8px 0;
+    }
+
+    /* Modal Overlay & Modal Window */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(0, 0, 0, 0.4);
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
-      padding: 20px;
+      z-index: 5000;
+      padding: 16px;
     }
-
-    .modal-content {
-      background-color: #ffffff;
-      border-radius: 12px;
-      padding: 28px;
-      max-width: 500px;
+    .modal-container {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      max-width: 600px;
       width: 100%;
-      border: 1px solid #e5e5e5;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
       position: relative;
     }
-
     .modal-close {
       position: absolute;
       top: 20px;
@@ -519,145 +734,19 @@
       border: none;
       font-size: 1.5rem;
       cursor: pointer;
-      color: #999999;
+      color: var(--text-muted);
     }
 
-    .modal-close:hover {
-      color: #111111;
+    /* Skeletons */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--border-color) 50%, var(--bg-tertiary) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: var(--radius-sm);
     }
-
-    /* Upgrade Banner styling */
-    .upgrade-banner {
-      background-color: #111111;
-      color: #ffffff;
-      padding: 24px;
-      border-radius: 10px;
-      margin-bottom: 24px;
-      text-align: center;
-    }
-    
-    .upgrade-banner h3 {
-      color: #ffffff;
-      margin-bottom: 8px;
-    }
-
-    .upgrade-banner p {
-      color: #cccccc;
-      font-size: 0.9rem;
-      margin-bottom: 16px;
-    }
-
-    /* Animated Landing Page Visual */
-    .landing-visual {
-      background-color: #ffffff;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      padding: 20px;
-      margin-top: 32px;
-      position: relative;
-      overflow: hidden;
-      font-family: monospace;
-      font-size: 0.8rem;
-      color: #666;
-    }
-
-    .landing-visual::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 40px;
-      background: linear-gradient(transparent, #ffffff);
-      pointer-events: none;
-    }
-
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
-      background-color: #00cc66;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 6px;
-      animation: pulse 1s infinite alternate;
-    }
-
-    /* Footer and links */
-    footer {
-      margin-top: auto;
-      padding-top: 48px;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #888888;
-    }
-
-    footer a {
-      color: #555555;
-      text-decoration: underline;
-    }
-
-    /* Settings trigger style */
-    .settings-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #666666;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px;
-      border-radius: 50%;
-      transition: all 0.2s ease;
-    }
-
-    .settings-btn:hover {
-      background-color: #eeeeee;
-      color: #111111;
-    }
-
-    /* Tabs/Toggle inside Login Signup */
-    .auth-toggle {
-      display: flex;
-      border-bottom: 1px solid #eeeeee;
-      margin-bottom: 24px;
-    }
-
-    .auth-tab {
-      flex: 1;
-      text-align: center;
-      padding: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      color: #666666;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s ease;
-    }
-
-    .auth-tab.active {
-      color: #111111;
-      border-bottom-color: #111111;
-    }
-
-    /* Back Button link */
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: #111111;
-      text-decoration: none;
-      font-weight: 500;
-      margin-bottom: 20px;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
-
-    .back-link:hover {
-      opacity: 0.7;
-    }
-
-    .feed-action-btn:hover {
-      background-color: #f3f3f3 !important;
-      color: #0077b5 !important;
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
   </style>
 </head>
@@ -665,27 +754,19 @@
 
   <div id="root"></div>
 
-  <!-- ----------------------------------------------------
-       REACT APPLICATION (BABEL TRANSPILED IN BROWSER)
-       ---------------------------------------------------- -->
+  <!-- React JSX compiled dynamically -->
   <script type="text/babel">
 
-    // Backend Endpoint Base URL (empty for same-origin server requests)
     const API_BASE = '';
 
-    // Unified API requester helper
+    // Standard API requester
     async function apiRequest(endpoint, method = 'GET', body = null) {
       const token = localStorage.getItem('linkedcraft_token');
-      const headers = {
-        'Content-Type': 'application/json'
-      };
+      const headers = { 'Content-Type': 'application/json' };
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      const options = {
-        method,
-        headers
-      };
+      const options = { method, headers };
       if (body) {
         options.body = JSON.stringify(body);
       }
@@ -698,88 +779,135 @@
       return response.json();
     }
 
-    // ----------------------------------------------------
-    // SAMPLE POSTS FOR ONBOARDING
-    // ----------------------------------------------------
     const FOUNDER_SAMPLES = [
       "Funding is not a badge of honor. It is a debt you owe to your employees, customers, and investors. Focus on building real revenue from day one. In India, capital efficiency is not a choice, it is a superpower. Scale will naturally follow when the unit economics work. #StartupIndia #Founders",
       "We hired our first 10 core engineers by sending raw, direct DMs on Twitter and LinkedIn. No fancy recruiter pitches, no bloated job specs. Just a simple, honest note about what we are building and why it matters. Look for missionaries, not mercenaries. Missionaries ship products; mercenaries watch the clock. #BuildingInPublic #Hiring",
       "Indian SaaS is built differently. We don't have the luxury of burning $50M on customer acquisition. We are forced to build global-grade software with tight, hungry product teams. It makes us resilient. The next decade of tech infrastructure is going to be written out of Bangalore and Pune. #IndianSaaS #Product"
     ];
 
-    // ----------------------------------------------------
-    // HELPER UTILITIES
-    // ----------------------------------------------------
-    const formatTimeAgo = (timestamp) => {
-      const diffMs = Date.now() - timestamp;
-      const diffSec = Math.floor(diffMs / 1000);
-      const diffMin = Math.floor(diffSec / 60);
-      const diffHr = Math.floor(diffMin / 60);
-      const diffDays = Math.floor(diffHr / 24);
+    // Helper functions
+    const formatTimeAgo = (ts) => {
+      const diffMs = Date.now() - ts;
+      const secs = Math.floor(diffMs / 1000);
+      const mins = Math.floor(secs / 60);
+      const hrs = Math.floor(mins / 60);
+      const days = Math.floor(hrs / 24);
 
-      if (diffSec < 60) return 'Just now';
-      if (diffMin < 60) return `${diffMin}m`;
-      if (diffHr < 24) return `${diffHr}h`;
-      return `${diffDays}d`;
+      if (secs < 60) return 'Just now';
+      if (mins < 60) return `${mins}m ago`;
+      if (hrs < 24) return `${hrs}h ago`;
+      return `${days}d ago`;
     };
 
-    // ----------------------------------------------------
-    // MAIN APPLICATION COMPONENT
-    // ----------------------------------------------------
     function App() {
-      // Router state
+      // Navigation Router state
       const [path, setPath] = React.useState(() => window.location.hash.replace('#', '') || '/');
       
-      // Auth & User States
+      // Global User & Configurations
       const [currentUser, setCurrentUser] = React.useState('');
       const [userData, setUserData] = React.useState(null);
       const [isInitializing, setIsInitializing] = React.useState(true);
+      const [theme, setTheme] = React.useState(() => localStorage.getItem('theme') || 'light');
       
-      // Settings panel config
-      const [apiKey, setApiKey] = React.useState('');
-      const [apiEndpoint, setApiEndpoint] = React.useState('https://api.anthropic.com/v1/messages');
-      const [apiProvider, setApiProvider] = React.useState('demo');
-      const [model, setModel] = React.useState('claude-haiku-4-5');
-      const [linkedinAccessToken, setLinkedinAccessToken] = React.useState('');
-      const [linkedinPersonUrn, setLinkedinPersonUrn] = React.useState('');
-      
-      // Server global configuration flags
-      const [serverConfig, setServerConfig] = React.useState({ hasServerClaudeKey: false, hasServerOpenRouterKey: false });
-      
-      // Form States
+      // Toast notifications state
+      const [toasts, setToasts] = React.useState([]);
+
+      // Forms
       const [authEmail, setAuthEmail] = React.useState('');
       const [authPassword, setAuthPassword] = React.useState('');
-      const [authMode, setAuthMode] = React.useState('signup'); // 'signup' or 'login'
+      const [authMode, setAuthMode] = React.useState('signup');
       const [authError, setAuthError] = React.useState('');
       
-      // Onboarding States
+      // Onboarding Voice samples
       const [onboardSample1, setOnboardSample1] = React.useState('');
       const [onboardSample2, setOnboardSample2] = React.useState('');
       const [onboardSample3, setOnboardSample3] = React.useState('');
       const [onboardError, setOnboardError] = React.useState('');
 
-      // Generate Page States
-      const [topicInput, setTopicInput] = React.useState('');
-      const [selectedStyle, setSelectedStyle] = React.useState('storytelling'); // storytelling, insight, contrarian, howto
-      const [isLoading, setIsLoading] = React.useState(false);
-      const [loadingMessage, setLoadingMessage] = React.useState('Writing in your voice…');
-      const [genError, setGenError] = React.useState('');
-      const [generatedDrafts, setGeneratedDrafts] = React.useState([]); // array of 3 strings
-      const [copiedIndex, setCopiedIndex] = React.useState(null); // track copy feedback
-      
-      // Publishing States
-      const [isPublishing, setIsPublishing] = React.useState(false);
-      const [publishingMessage, setPublishingMessage] = React.useState('');
-      const [publishingError, setPublishingError] = React.useState('');
-      const [publishSuccess, setPublishSuccess] = React.useState(false);
-      
-      // View Specific States
-      const [showSettingsModal, setShowSettingsModal] = React.useState(false);
-      const [activeHistoryItem, setActiveHistoryItem] = React.useState(null); 
+      // Settings state
+      const [apiKey, setApiKey] = React.useState('');
+      const [apiProvider, setApiProvider] = React.useState('demo');
+      const [model, setModel] = React.useState('gemini-2.5-flash');
+      const [linkedinAccessToken, setLinkedinAccessToken] = React.useState('');
+      const [linkedinPersonUrn, setLinkedinPersonUrn] = React.useState('');
 
-      // Restore session on app start
+      // Generation States
+      const [topicInput, setTopicInput] = React.useState('');
+      const [selectedStyle, setSelectedStyle] = React.useState('storytelling');
+      const [isLoading, setIsLoading] = React.useState(false);
+      const [loadingMessage, setLoadingMessage] = React.useState('');
+      const [genError, setGenError] = React.useState('');
+      const [generatedDrafts, setGeneratedDrafts] = React.useState([]);
+      const [copiedIndex, setCopiedIndex] = React.useState(null);
+
+      // AI Chat States
+      const [conversations, setConversations] = React.useState([]);
+      const [activeConvId, setActiveConvId] = React.useState(null);
+      const [activeConv, setActiveConv] = React.useState(null);
+      const [chatInput, setChatInput] = React.useState('');
+      const [isChatSending, setIsChatSending] = React.useState(false);
+
+      // Calendar States
+      const [calendarItems, setCalendarItems] = React.useState([]);
+      const [isCalendarGenerating, setIsCalendarGenerating] = React.useState(false);
+      const [planDays, setPlanDays] = React.useState(7);
+      const [editingItem, setEditingItem] = React.useState(null);
+
+      // Analytics States
+      const [analyticsData, setAnalyticsData] = React.useState(null);
+
+      // LinkedIn connection simulation state
+      const [showLinkedinModal, setShowLinkedinModal] = React.useState(false);
+      const [mockLiName, setMockLiName] = React.useState('Lethesh Sudhakar');
+      const [mockLiHeadline, setMockLiHeadline] = React.useState('AI Engineer & SaaS Architect | Building LinkedCraft');
+      const [profileAudit, setProfileAudit] = React.useState('');
+      const [isAuditingProfile, setIsAuditingProfile] = React.useState(false);
+      
+      // Comment networking generator
+      const [commentTargetPost, setCommentTargetPost] = React.useState('');
+      const [suggestedComments, setSuggestedComments] = React.useState([]);
+      const [isGeneratingComments, setIsGeneratingComments] = React.useState(false);
+
+      // Global Server Config Check
+      const [serverConfig, setServerConfig] = React.useState({ hasServerGeminiKey: false });
+
+      // Toast Add Trigger
+      const addToast = (msg) => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message: msg }]);
+        setTimeout(() => {
+          setToasts(prev => prev.filter(t => t.id !== id));
+        }, 3000);
+      };
+
+      // Theme toggle hook
       React.useEffect(() => {
-        const restoreSession = async () => {
+        const body = document.body;
+        if (theme === 'dark') {
+          body.classList.add('dark-theme');
+        } else {
+          body.classList.remove('dark-theme');
+        }
+        localStorage.setItem('theme', theme);
+      }, [theme]);
+
+      // Path synchronizer
+      React.useEffect(() => {
+        const handleHash = () => {
+          setPath(window.location.hash.replace('#', '') || '/');
+        };
+        window.addEventListener('hashchange', handleHash);
+        return () => window.removeEventListener('hashchange', handleHash);
+      }, []);
+
+      // Navigation handler
+      const navigateTo = (p) => {
+        window.location.hash = '#' + p;
+      };
+
+      // Session restorer
+      React.useEffect(() => {
+        const checkSession = async () => {
           const token = localStorage.getItem('linkedcraft_token');
           if (token) {
             try {
@@ -787,137 +915,87 @@
               setCurrentUser(res.user.email);
               setUserData(res.user);
               setServerConfig(res.config);
-              
-              // Load saved configurations
+
+              // Map initial profile configurations
               setApiKey(res.user.apiKey || '');
-              setApiEndpoint(res.user.apiEndpoint || 'https://api.anthropic.com/v1/messages');
               setApiProvider(res.user.apiProvider || 'demo');
-              setModel(res.user.model || 'claude-haiku-4-5');
+              setModel(res.user.model || 'gemini-2.5-flash');
               setLinkedinAccessToken(res.user.linkedinAccessToken || '');
               setLinkedinPersonUrn(res.user.linkedinPersonUrn || '');
             } catch (err) {
-              console.error("Session restoration failed:", err);
               localStorage.removeItem('linkedcraft_token');
             }
           }
           setIsInitializing(false);
         };
-        restoreSession();
+        checkSession();
       }, []);
 
-      // Sync URL hash path changes
-      React.useEffect(() => {
-        const handleHashChange = () => {
-          const newPath = window.location.hash.replace('#', '') || '/';
-          setPath(newPath);
-          window.scrollTo(0, 0);
-          setAuthError('');
-          setOnboardError('');
-          setGenError('');
-        };
-        window.addEventListener('hashchange', handleHashChange);
-        return () => window.removeEventListener('hashchange', handleHashChange);
-      }, []);
-
-      // Auto route guards based on login status
+      // Route Guard redirects
       React.useEffect(() => {
         if (isInitializing) return;
-
         const publicPaths = ['/', '/login', '/signup'];
         const isAuth = !!currentUser;
         
         if (!isAuth && !publicPaths.includes(path)) {
           navigateTo('/');
-        } else if (isAuth) {
-          if (publicPaths.includes(path)) {
-            if (userData && userData.onboardingComplete) {
-              navigateTo('/dashboard');
-            } else {
-              navigateTo('/onboarding');
-            }
+        } else if (isAuth && publicPaths.includes(path)) {
+          if (userData && userData.onboardingComplete) {
+            navigateTo('/dashboard');
+          } else {
+            navigateTo('/onboarding');
           }
         }
-      }, [path, currentUser, userData, isInitializing]);
-
-      // Navigation utility
-      const navigateTo = (toPath) => {
-        window.location.hash = '#' + toPath;
-      };
-
-      const handleLogout = () => {
-        localStorage.removeItem('linkedcraft_token');
-        setCurrentUser('');
-        setUserData(null);
-        navigateTo('/');
-      };
+      }, [path, currentUser, isInitializing, userData]);
 
       // ----------------------------------------------------
       // AUTH ACTIONS
       // ----------------------------------------------------
-      const handleAuthSubmit = async (e) => {
+      const handleAuth = async (e) => {
         e.preventDefault();
         setAuthError('');
-
         if (!authEmail || !authPassword) {
-          setAuthError('Please fill in all fields.');
-          return;
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(authEmail)) {
-          setAuthError('Please enter a valid email address.');
-          return;
-        }
-
-        if (authPassword.length < 6) {
-          setAuthError('Password must be at least 6 characters.');
+          setAuthError('All fields are required.');
           return;
         }
 
         try {
           const endpoint = authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login';
           const authRes = await apiRequest(endpoint, 'POST', { email: authEmail, password: authPassword });
-          
           localStorage.setItem('linkedcraft_token', authRes.token);
           
-          // Fetch complete profile & config
-          const res = await apiRequest('/api/user');
-          setCurrentUser(res.user.email);
-          setUserData(res.user);
-          setServerConfig(res.config);
-          
-          setApiKey(res.user.apiKey || '');
-          setApiEndpoint(res.user.apiEndpoint || 'https://api.anthropic.com/v1/messages');
-          setApiProvider(res.user.apiProvider || 'demo');
-          setModel(res.user.model || 'claude-haiku-4-5');
-          setLinkedinAccessToken(res.user.linkedinAccessToken || '');
-          setLinkedinPersonUrn(res.user.linkedinPersonUrn || '');
-          
-          if (res.user.onboardingComplete) {
+          const profile = await apiRequest('/api/user');
+          setCurrentUser(profile.user.email);
+          setUserData(profile.user);
+          setServerConfig(profile.config);
+
+          addToast(`Logged in successfully!`);
+          if (profile.user.onboardingComplete) {
             navigateTo('/dashboard');
           } else {
             navigateTo('/onboarding');
           }
-        } catch (error) {
-          setAuthError(error.message || 'Authentication failed. Please check your credentials.');
+        } catch (err) {
+          setAuthError(err.message);
         }
       };
 
-      // ----------------------------------------------------
-      // ONBOARDING ACTIONS
-      // ----------------------------------------------------
-      const loadFounderSamples = () => {
-        setOnboardSample1(FOUNDER_SAMPLES[0]);
-        setOnboardSample2(FOUNDER_SAMPLES[1]);
-        setOnboardSample3(FOUNDER_SAMPLES[2]);
+      const handleLogout = () => {
+        localStorage.removeItem('linkedcraft_token');
+        setCurrentUser('');
+        setUserData(null);
+        addToast("Logged out successfully.");
+        navigateTo('/');
       };
 
-      const handleOnboardingSubmit = async (e) => {
+      // ----------------------------------------------------
+      // ONBOARDING VOICE BUILDER
+      // ----------------------------------------------------
+      const handleOnboarding = async (e) => {
         e.preventDefault();
         setOnboardError('');
-
         if (!onboardSample1.trim() || !onboardSample2.trim()) {
-          setOnboardError('Please fill in at least Sample post 1 and Sample post 2.');
+          setOnboardError('Please fill in at least two voice samples.');
           return;
         }
 
@@ -927,1081 +1005,1224 @@
         }
 
         try {
-          const updatedUser = await apiRequest('/api/user/samples', 'POST', { samples });
-          setUserData(updatedUser);
+          const updated = await apiRequest('/api/user/samples', 'POST', { samples });
+          setUserData(updated);
+          addToast("Voice samples saved! Welcome to LinkedCraft.");
           navigateTo('/dashboard');
         } catch (error) {
-          setOnboardError(error.message || 'Failed to build voice profile.');
+          setOnboardError(error.message);
         }
       };
 
       // ----------------------------------------------------
-      // AI GENERATION LOGIC
+      // QUICK DRAFTS ENGINE
       // ----------------------------------------------------
-      const handleGenerate = async () => {
+      const generateDrafts = async () => {
         if (!topicInput.trim()) return;
         
-        const postsRemaining = 5 - (userData.postsGenerated || 0);
-        if (postsRemaining <= 0) {
-          setGenError('You have exhausted your remaining post drafts. Please upgrade your plan.');
+        // Quota control
+        if (userData && userData.plan !== 'pro' && (userData.postsGenerated || 0) >= 5) {
+          addToast("Credits exhausted! Please upgrade to Pro.");
           return;
         }
 
         setIsLoading(true);
         setGenError('');
         setGeneratedDrafts([]);
-        
-        const messages = [
-          "Analyzing your voice profile...",
-          "Decoding tone metrics & sentence patterns...",
-          "Aligning target context for Indian founders...",
-          "Structuring hooks & hooks variables...",
-          "Drafting 3 unique post variations..."
+        setLoadingMessage("Analyzing voice patterns...");
+
+        const loaders = [
+          "Evaluating brand alignment...",
+          "Crafting attention-grabbing hooks...",
+          "Applying dynamic copywriting guidelines...",
+          "Drafting 3 unique LinkedIn posts..."
         ];
-        
-        let msgIndex = 0;
-        const msgInterval = setInterval(() => {
-          if (msgIndex < messages.length - 1) {
-            msgIndex++;
-            setLoadingMessage(messages[msgIndex]);
+
+        let idx = 0;
+        const interval = setInterval(() => {
+          if (idx < loaders.length) {
+            setLoadingMessage(loaders[idx]);
+            idx++;
           }
-        }, 3000);
+        }, 1500);
 
         try {
-          if (apiProvider === 'ollama') {
-            setLoadingMessage('Checking local Ollama server status...');
-            const status = await apiRequest(`/api/ollama/status?model=${model}`);
-            
-            if (!status.running) {
-              throw new Error('Local Ollama server could not be started automatically. Please verify that Ollama is installed and run "ollama serve" manually.');
-            }
-            
-            if (!status.installed) {
-              setLoadingMessage(`Downloading ${model} to your PC (this may take a few minutes)...`);
-              await apiRequest('/api/ollama/pull', 'POST', { model });
-              setLoadingMessage('Model downloaded successfully! Commencing post drafting...');
-            }
-          }
-
           const res = await apiRequest('/api/generate', 'POST', { topic: topicInput, style: selectedStyle });
-          
-          // Refetch user data to update stats and history logs
-          const updated = await apiRequest('/api/user');
-          setUserData(updated.user);
           setGeneratedDrafts(res.drafts);
+          
+          // Refresh user stats
+          const profile = await apiRequest('/api/user');
+          setUserData(profile.user);
+          addToast("3 drafts generated successfully!");
         } catch (error) {
-          console.error("API Call error:", error);
-          setGenError(error.message || 'Generation failed. Make sure your configuration and credentials are correct.');
+          setGenError(error.message);
         } finally {
-          clearInterval(msgInterval);
+          clearInterval(interval);
           setIsLoading(false);
         }
       };
 
       // ----------------------------------------------------
-      // CLIPBOARD UTILITIES
+      // CONTENT PLANNER CALENDAR FUNCTIONS
       // ----------------------------------------------------
-      const copyToClipboard = (text, index) => {
-        navigator.clipboard.writeText(text).then(() => {
-          setCopiedIndex(index);
-          setTimeout(() => setCopiedIndex(null), 2000);
-        }).catch(err => {
-          console.error('Could not copy text: ', err);
-        });
+      const loadCalendar = async () => {
+        try {
+          const items = await apiRequest('/api/calendar');
+          setCalendarItems(items);
+        } catch (e) {
+          console.error("Failed to load calendar", e);
+        }
       };
 
-      // ----------------------------------------------------
-      // LINKEDIN PUBLISHING ACTION
-      // ----------------------------------------------------
-      const publishToLinkedIn = async (text) => {
-        setIsPublishing(true);
-        setPublishingError('');
-        setPublishSuccess(false);
-        setPublishingMessage('Connecting to LinkedIn server...');
+      const generateCalendarPlan = async () => {
+        if (userData?.plan !== 'pro' && planDays > 7) {
+          addToast("Up to 7 days allowed in Free tier. Upgrade to Pro.");
+          return;
+        }
 
-        const steps = [
-          'Checking Access Token authorization...',
-          'Formatting UGC share commentary...',
-          'Broadcasting payload to LinkedIn UGC Post API...',
-          'Success! Draft published.'
-        ];
-
-        let stepIdx = 0;
-        const interval = setInterval(() => {
-          if (stepIdx < steps.length - 1) {
-            stepIdx++;
-            setPublishingMessage(steps[stepIdx]);
-          }
-        }, 600);
+        setIsCalendarGenerating(true);
+        addToast("AI Content Planner starting up...");
 
         try {
-          const res = await apiRequest('/api/publish', 'POST', { text });
-          clearInterval(interval);
-          setPublishingMessage('Draft published successfully!');
-          setPublishSuccess(true);
-          
-          // Refetch user profile to update stats & feed
-          const profileData = await apiRequest('/api/user');
-          setUserData(profileData.user);
-          
-          setTimeout(() => {
-            setIsPublishing(false);
-            setPublishSuccess(false);
-          }, 2500);
-        } catch (error) {
-          clearInterval(interval);
-          setPublishingError(error.message || 'Failed to publish draft. Check settings or retry.');
+          const items = await apiRequest('/api/calendar/generate-plan', 'POST', { durationDays: planDays });
+          setCalendarItems(prev => [...prev, ...items]);
+          addToast(`Generated ${items.length} new content ideas successfully.`);
+        } catch (e) {
+          addToast(e.message);
+        } finally {
+          setIsCalendarGenerating(false);
+        }
+      };
+
+      const handleApproveCalendar = async (id, status) => {
+        try {
+          const updated = await apiRequest(`/api/calendar/${id}`, 'PUT', { status });
+          setCalendarItems(prev => prev.map(item => item.id === id ? updated : item));
+          addToast(`Calendar item marked as ${status}.`);
+        } catch (e) {
+          addToast("Failed to update status");
+        }
+      };
+
+      const handleDeleteCalendar = async (id) => {
+        if (!confirm("Remove this post from your planner?")) return;
+        try {
+          await apiRequest(`/api/calendar/${id}`, 'DELETE');
+          setCalendarItems(prev => prev.filter(item => item.id !== id));
+          addToast("Planner post removed.");
+        } catch (e) {
+          addToast("Failed to delete item");
+        }
+      };
+
+      const handleSaveCalendarEdit = async (e) => {
+        e.preventDefault();
+        try {
+          const updated = await apiRequest(`/api/calendar/${editingItem.id}`, 'PUT', {
+            postText: editingItem.postText,
+            scheduledTime: editingItem.scheduledTime,
+            date: editingItem.date
+          });
+          setCalendarItems(prev => prev.map(item => item.id === editingItem.id ? updated : item));
+          setEditingItem(null);
+          addToast("Calendar post updated.");
+        } catch (e) {
+          addToast("Failed to save post updates.");
         }
       };
 
       // ----------------------------------------------------
-      // SETTINGS PANEL ACTIONS
+      // AI CHAT AGENT FUNCTIONS
+      // ----------------------------------------------------
+      const loadConversations = async () => {
+        try {
+          const list = await apiRequest('/api/conversations');
+          setConversations(list);
+          if (list.length > 0 && !activeConvId) {
+            loadChatDetails(list[0].id);
+          }
+        } catch (e) {
+          console.error("Failed to load chats", e);
+        }
+      };
+
+      const createConversation = async () => {
+        try {
+          const fresh = await apiRequest('/api/conversations', 'POST');
+          setConversations(prev => [fresh, ...prev]);
+          loadChatDetails(fresh.id);
+          addToast("Created new discussion thread.");
+        } catch (e) {
+          addToast("Failed to create conversation");
+        }
+      };
+
+      const loadChatDetails = async (id) => {
+        setActiveConvId(id);
+        setActiveConv(null);
+        try {
+          const details = await apiRequest(`/api/conversations/${id}`);
+          setActiveConv(details);
+        } catch (e) {
+          addToast("Failed to load chat history.");
+        }
+      };
+
+      const sendChatMessage = async (e) => {
+        e?.preventDefault();
+        if (!chatInput.trim() || !activeConvId) return;
+
+        const typed = chatInput;
+        setChatInput('');
+        setIsChatSending(true);
+
+        // Optimistically render message
+        setActiveConv(prev => ({
+          ...prev,
+          messages: [...(prev.messages || []), { id: 'msg_temp', role: 'user', content: typed, timestamp: Date.now() }]
+        }));
+
+        try {
+          const updated = await apiRequest(`/api/conversations/${activeConvId}/messages`, 'POST', { content: typed });
+          setActiveConv(updated);
+          
+          // Refresh conversation list to get new titles
+          const list = await apiRequest('/api/conversations');
+          setConversations(list);
+        } catch (e) {
+          addToast(e.message);
+        } finally {
+          setIsChatSending(false);
+        }
+      };
+
+      const deleteConversation = async (id, e) => {
+        e.stopPropagation();
+        if (!confirm("Are you sure you want to delete this thread?")) return;
+        try {
+          await apiRequest(`/api/conversations/${id}`, 'DELETE');
+          setConversations(prev => prev.filter(c => c.id !== id));
+          if (activeConvId === id) {
+            setActiveConv(null);
+            setActiveConvId(null);
+          }
+          addToast("Thread deleted.");
+        } catch (e) {
+          addToast("Failed to delete thread");
+        }
+      };
+
+      // ----------------------------------------------------
+      // BRAND ANALYTICS & INSIGHTS
+      // ----------------------------------------------------
+      const loadAnalytics = async () => {
+        try {
+          const res = await apiRequest('/api/analytics');
+          setAnalyticsData(res);
+        } catch (e) {
+          console.error("Failed to load analytics", e);
+        }
+      };
+
+      // ----------------------------------------------------
+      // LINKEDIN CONNECTOR AND PROFILE ANALYSIS
+      // ----------------------------------------------------
+      const handleConnectLinkedin = async (e) => {
+        e.preventDefault();
+        try {
+          const connectedProfile = await apiRequest('/api/linkedin/oauth-callback', 'POST', {
+            name: mockLiName,
+            headline: mockLiHeadline
+          });
+          
+          // Update local profile state
+          const profile = await apiRequest('/api/user');
+          setUserData(profile.user);
+          setShowLinkedinModal(false);
+          addToast("LinkedIn connected successfully!");
+        } catch (err) {
+          addToast("Connection failed.");
+        }
+      };
+
+      const handleDisconnectLinkedin = async () => {
+        try {
+          await apiRequest('/api/linkedin/disconnect', 'POST');
+          const profile = await apiRequest('/api/user');
+          setUserData(profile.user);
+          setProfileAudit('');
+          addToast("LinkedIn connection removed.");
+        } catch (err) {
+          addToast("Disconnection failed.");
+        }
+      };
+
+      const handleAnalyzeProfile = async () => {
+        setIsAuditingProfile(true);
+        setProfileAudit('');
+        try {
+          const res = await apiRequest('/api/linkedin/profile-analysis');
+          setProfileAudit(res.audit);
+        } catch (err) {
+          addToast(err.message);
+        } finally {
+          setIsAuditingProfile(false);
+        }
+      };
+
+      const handleSuggestComments = async () => {
+        if (!commentTargetPost.trim()) return;
+        setIsGeneratingComments(true);
+        setSuggestedComments([]);
+        try {
+          const res = await apiRequest('/api/linkedin/suggest-comments', 'POST', { postText: commentTargetPost });
+          setSuggestedComments(res.comments);
+          addToast("Suggested comments generated.");
+        } catch (err) {
+          addToast(err.message);
+        } finally {
+          setIsGeneratingComments(false);
+        }
+      };
+
+      // ----------------------------------------------------
+      // MEMORY SETTINGS SYSTEM
+      // ----------------------------------------------------
+      const [niche, setNiche] = React.useState('');
+      const [industry, setIndustry] = React.useState('');
+      const [targetAudience, setTargetAudience] = React.useState('');
+      const [writingStyle, setWritingStyle] = React.useState('');
+      const [contentGoals, setContentGoals] = React.useState('');
+
+      const loadMemory = async () => {
+        try {
+          const mem = await apiRequest('/api/user/memory');
+          setNiche(mem.niche || '');
+          setIndustry(mem.industry || '');
+          setTargetAudience(mem.targetAudience || '');
+          setWritingStyle(mem.writingStyle || '');
+          setContentGoals(mem.contentGoals || '');
+        } catch (e) {
+          console.error("Failed to load memory state", e);
+        }
+      };
+
+      const handleSaveMemory = async (e) => {
+        e.preventDefault();
+        try {
+          const mem = await apiRequest('/api/user/memory', 'POST', {
+            niche,
+            industry,
+            targetAudience,
+            writingStyle,
+            contentGoals
+          });
+          
+          const profile = await apiRequest('/api/user');
+          setUserData(profile.user);
+          addToast("Memory profile updated! All future generations will align with this.");
+        } catch (e) {
+          addToast("Failed to save memory parameters.");
+        }
+      };
+
+      // ----------------------------------------------------
+      // SETTINGS & PRO UPGRADES
       // ----------------------------------------------------
       const handleSaveSettings = async (e) => {
         e.preventDefault();
         try {
-          const updatedUser = await apiRequest('/api/user/settings', 'POST', {
+          await apiRequest('/api/user/settings', 'POST', {
             apiKey,
-            apiEndpoint,
             apiProvider,
             model
           });
-          const finalUser = await apiRequest('/api/user/linkedin', 'POST', {
-            linkedinAccessToken,
-            linkedinPersonUrn
-          });
-          setUserData(finalUser);
-          setShowSettingsModal(false);
-        } catch (error) {
-          alert("Failed to save configuration: " + error.message);
+          addToast("Model settings saved.");
+        } catch (err) {
+          addToast(err.message);
         }
       };
 
-      const handleResetHistory = async () => {
-        if (confirm("Are you sure you want to reset all generation stats and history? This cannot be undone.")) {
-          try {
-            const updatedUser = await apiRequest('/api/history/reset', 'POST');
-            setUserData(updatedUser);
-            setShowSettingsModal(false);
-          } catch (error) {
-            alert("Failed to reset account data: " + error.message);
+      const handleUpgrade = async () => {
+        try {
+          const res = await apiRequest('/api/subscription/upgrade', 'POST');
+          if (res.success) {
+            const profile = await apiRequest('/api/user');
+            setUserData(profile.user);
+            addToast("Pro status unlocked! Enjoy unlimited generations.");
           }
+        } catch (e) {
+          addToast("Upgrade failed.");
         }
       };
 
-      const getProviderDisplay = () => {
-        if (apiProvider === 'demo') {
-          if (serverConfig.hasServerClaudeKey || serverConfig.hasServerOpenRouterKey || serverConfig.hasServerGroqKey) {
-            return 'Server API Key Autodetect (Active)';
+      const handlePublishPost = async (text, id = null) => {
+        try {
+          addToast("Publishing post commentary...");
+          const res = await apiRequest('/api/publish', 'POST', { text });
+          if (res.success) {
+            addToast("Published successfully to LinkedIn!");
+            
+            // Mark calendar item as published
+            if (id) {
+              await apiRequest(`/api/calendar/${id}`, 'PUT', { status: 'published', linkedinPostId: res.post.linkedinPostId });
+              loadCalendar();
+            }
+            
+            // Refresh profile stats
+            const profile = await apiRequest('/api/user');
+            setUserData(profile.user);
           }
-          return 'Demo Mode (Mocked)';
+        } catch (e) {
+          addToast(e.message);
         }
-        if (apiProvider === 'anthropic') return `Claude (${model})`;
-        if (apiProvider === 'openrouter') return `OpenRouter (${model})`;
-        if (apiProvider === 'groq') return `Groq Llama (${model})`;
-        if (apiProvider === 'ollama') return `Local Llama (${model})`;
-        return '';
       };
 
-      // UI Component Elements
-      const postsGenerated = userData ? (userData.postsGenerated || 0) : 0;
-      const postsRemaining = Math.max(0, 5 - postsGenerated);
+      // Trigger loads based on active view path
+      React.useEffect(() => {
+        if (!currentUser) return;
+        if (path === '/dashboard') {
+          loadCalendar();
+          loadAnalytics();
+        } else if (path === '/chat') {
+          loadConversations();
+          loadMemory();
+        } else if (path === '/calendar') {
+          loadCalendar();
+          loadMemory();
+        } else if (path === '/analytics') {
+          loadAnalytics();
+        } else if (path === '/memory') {
+          loadMemory();
+        } else if (path === '/linkedin') {
+          loadMemory();
+        }
+      }, [path, currentUser]);
 
       if (isInitializing) {
         return (
-          <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-            <div className="spinner"></div>
-            <div className="loader-message" style={{ marginTop: '16px', fontWeight: 500, color: '#555' }}>LinkedCraft — Restoring Session...</div>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
+            <div className="skeleton" style={{ width: '60px', height: '60px', borderRadius: '50%', marginBottom: '16px' }}></div>
+            <div style={{ fontStyle: 'italic', color: '#64748b' }}>Restoring session...</div>
           </div>
         );
       }
 
       return (
-        <div className="app-container">
-          
-          {/* Header */}
+        <div className="app-layout">
+          {toasts.length > 0 && (
+            <div className="toast-container">
+              {toasts.map(t => (
+                <div key={t.id} className="toast">
+                  <span>✨</span> {t.message}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Left Sidebar Menu */}
           {currentUser && (
-            <div className="navbar">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div className="logo" onClick={() => navigateTo('/dashboard')} style={{cursor: 'pointer'}}>
-                  LinkedCraft <span className="logo-badge">IN</span>
-                </div>
-                <nav style={{ display: 'flex', gap: '12px', marginLeft: '12px' }}>
-                  <a href="#/dashboard" style={{ fontSize: '0.85rem', fontWeight: path === '/dashboard' ? 'bold' : '500', color: '#111111', textDecoration: 'none' }}>Dashboard</a>
-                  <a href="#/feed" style={{ fontSize: '0.85rem', fontWeight: path === '/feed' ? 'bold' : '500', color: '#111111', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    Live Feed
-                    {userData && userData.publishedPosts && userData.publishedPosts.length > 0 && (
-                      <span style={{ backgroundColor: '#0077b5', color: '#fff', fontSize: '0.65rem', padding: '1px 5px', borderRadius: '10px', fontWeight: 'bold' }}>
-                        {userData.publishedPosts.length}
-                      </span>
-                    )}
-                  </a>
-                </nav>
+            <div className="sidebar">
+              <div className="sidebar-brand">
+                LinkedCraft <span>IN</span>
               </div>
-              <div className="navbar-right">
-                <span style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: (userData && userData.linkedinAccessToken) ? '#0077b5' : '#666666',
-                  backgroundColor: (userData && userData.linkedinAccessToken) ? '#eef3f8' : '#f3f3f3',
-                  padding: '4px 8px',
-                  borderRadius: '12px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}>
-                  LinkedIn: {(userData && userData.linkedinAccessToken) ? 'Live Connected' : 'Simulated'}
-                </span>
-                <span className="muted" style={{fontSize: '0.85rem'}}>{currentUser}</span>
-                <button className="settings-btn" onClick={() => setShowSettingsModal(true)} title="API Settings">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                </button>
-                <button className="btn btn-secondary" style={{padding: '6px 12px', fontSize: '0.8rem'}} onClick={handleLogout}>
-                  Logout
-                </button>
-              </div>
-            </div>
-          )}
+              <ul className="sidebar-menu">
+                <li>
+                  <div className={`sidebar-link ${path === '/dashboard' ? 'active' : ''}`} onClick={() => navigateTo('/dashboard')}>
+                    <span>🏠</span> Dashboard
+                  </div>
+                </li>
+                <li>
+                  <div className={`sidebar-link ${path === '/chat' ? 'active' : ''}`} onClick={() => navigateTo('/chat')}>
+                    <span>💬</span> AI Strategist Chat
+                  </div>
+                </li>
+                <li>
+                  <div className={`sidebar-link ${path === '/calendar' ? 'active' : ''}`} onClick={() => navigateTo('/calendar')}>
+                    <span>📅</span> Content Calendar
+                  </div>
+                </li>
+                <li>
+                  <div className={`sidebar-link ${path === '/analytics' ? 'active' : ''}`} onClick={() => navigateTo('/analytics')}>
+                    <span>📊</span> Growth Analytics
+                  </div>
+                </li>
+                <li>
+                  <div className={`sidebar-link ${path === '/memory' ? 'active' : ''}`} onClick={() => navigateTo('/memory')}>
+                    <span>🧠</span> Growth Memory
+                  </div>
+                </li>
+                <li>
+                  <div className={`sidebar-link ${path === '/linkedin' ? 'active' : ''}`} onClick={() => navigateTo('/linkedin')}>
+                    <span>🔗</span> LinkedIn Hub
+                  </div>
+                </li>
+                <li>
+                  <div className={`sidebar-link ${path === '/settings' ? 'active' : ''}`} onClick={() => navigateTo('/settings')}>
+                    <span>⚙️</span> Model Settings
+                  </div>
+                </li>
+              </ul>
 
-          {/* PAGE 1: LANDING PAGE */}
-          {path === '/' && (
-            <div style={{textAlign: 'center', padding: '40px 0'}}>
-              <div style={{display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontWeight: 'bold', fontSize: '1.4rem'}}>
-                ✍️ LinkedCraft <span className="logo-badge">FOR INDIAN FOUNDERS</span>
-              </div>
-              <h1>Write LinkedIn posts in your exact voice</h1>
-              <p className="muted" style={{fontSize: '1.15rem', marginBottom: '32px', lineHeight: '1.4'}}>
-                Built for Indian founders. Paste a topic, get 3 ready-to-post drafts in 30 seconds.
-              </p>
-              
-              <div style={{display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '40px'}}>
-                <button className="btn btn-primary" onClick={() => { setAuthMode('signup'); navigateTo('/signup'); }}>
-                  Get started free
-                </button>
-                <button className="btn btn-secondary" onClick={() => { setAuthMode('login'); navigateTo('/login'); }}>
-                  Log in
-                </button>
-              </div>
-
-              {/* Landing Visual Animation */}
-              <div className="landing-visual">
-                <div style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '12px'}}>
-                  <span style={{fontWeight: 'bold', color: '#111'}}><span className="pulse-dot"></span>Tone Engine: Connected</span>
-                  <span>model: claude-3-5-haiku</span>
-                </div>
-                <div style={{textAlign: 'left', fontFamily: 'inherit', color: '#222', fontSize: '0.9rem', lineHeight: '1.5'}}>
-                  <span style={{color: '#888', fontStyle: 'italic'}}>Topic: "Bootstrap lessons"</span><br/>
-                  <span style={{color: '#888', fontStyle: 'italic'}}>Style: Contrarian</span>
-                  <p style={{marginTop: '8px', borderLeft: '2px solid #111', paddingLeft: '10px', color: '#333'}}>
-                    "Unpopular opinion: Networking events are a colossal waste of time for early-stage founders. You don't need to exchange 50 business cards... The best founders are sitting in their offices talking to clients."
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* PAGE 2: SIGNUP / LOGIN */}
-          {(path === '/signup' || path === '/login') && (
-            <div className="card" style={{maxWidth: '450px', margin: '40px auto', width: '100%'}}>
-              
-              <div className="auth-toggle">
-                <div 
-                  className={`auth-tab ${authMode === 'signup' ? 'active' : ''}`}
-                  onClick={() => { setAuthMode('signup'); setAuthError(''); }}
-                >
-                  Create Account
-                </div>
-                <div 
-                  className={`auth-tab ${authMode === 'login' ? 'active' : ''}`}
-                  onClick={() => { setAuthMode('login'); setAuthError(''); }}
-                >
-                  Sign In
-                </div>
-              </div>
-
-              <h3 style={{marginBottom: '20px', textAlign: 'center'}}>
-                {authMode === 'signup' ? 'Get started with LinkedCraft' : 'Welcome back to LinkedCraft'}
-              </h3>
-
-              {authError && (
-                <div className="error-alert">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                  {authError}
-                </div>
-              )}
-
-              <form onSubmit={handleAuthSubmit}>
-                <div className="form-group">
-                  <label className="form-label">Email Address</label>
-                  <input 
-                    type="email" 
-                    className="form-input" 
-                    placeholder="you@startup.in"
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Password</label>
-                  <input 
-                    type="password" 
-                    className="form-input" 
-                    placeholder="••••••••"
-                    value={authPassword}
-                    onChange={(e) => setAuthPassword(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <button type="submit" className="btn btn-primary btn-block" style={{marginTop: '8px'}}>
-                  {authMode === 'signup' ? 'Sign Up' : 'Log In'}
-                </button>
-              </form>
-              
-              <p className="muted" style={{textAlign: 'center', marginTop: '20px', marginBottom: 0}}>
-                {authMode === 'signup' ? (
-                  <span>Already have an account? <a href="#/login" onClick={(e) => { e.preventDefault(); setAuthMode('login'); navigateTo('/login'); }} style={{color: '#111', fontWeight: 600}}>Log in</a></span>
-                ) : (
-                  <span>New to LinkedCraft? <a href="#/signup" onClick={(e) => { e.preventDefault(); setAuthMode('signup'); navigateTo('/signup'); }} style={{color: '#111', fontWeight: 600}}>Create account</a></span>
-                )}
-              </p>
-            </div>
-          )}
-
-          {/* PAGE 3: ONBOARDING */}
-          {path === '/onboarding' && (
-            <div>
-              <h2>Set up your writing voice</h2>
-              <p className="muted" style={{marginBottom: '24px'}}>
-                Paste LinkedIn posts you've written. We analyse your style and write new posts that sound exactly like you.
-              </p>
-
-              {onboardError && (
-                <div className="error-alert">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                  {onboardError}
-                </div>
-              )}
-
-              <div style={{display: 'flex', justifyContent: 'flex-end', marginBottom: '16px'}}>
-                <button type="button" className="sample-loader-btn" onClick={loadFounderSamples}>
-                  💡 Load sample founder posts for testing
-                </button>
-              </div>
-
-              <form onSubmit={handleOnboardingSubmit}>
-                <div className="form-group">
-                  <label className="form-label">Sample post 1 (Required)</label>
-                  <textarea 
-                    className="form-textarea" 
-                    placeholder="Paste a LinkedIn post you wrote..."
-                    style={{minHeight: '120px'}}
-                    value={onboardSample1}
-                    onChange={(e) => setOnboardSample1(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Sample post 2 (Required)</label>
-                  <textarea 
-                    className="form-textarea" 
-                    placeholder="Paste another LinkedIn post you wrote..."
-                    style={{minHeight: '120px'}}
-                    value={onboardSample2}
-                    onChange={(e) => setOnboardSample2(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Sample post 3 (Optional)</label>
-                  <textarea 
-                    className="form-textarea" 
-                    placeholder="Paste a third LinkedIn post (optional)..."
-                    style={{minHeight: '120px'}}
-                    value={onboardSample3}
-                    onChange={(e) => setOnboardSample3(e.target.value)}
-                  />
-                </div>
-
-                <button 
-                  type="submit" 
-                  className="btn btn-primary btn-block" 
-                  style={{marginTop: '12px'}}
-                  disabled={!onboardSample1.trim() || !onboardSample2.trim()}
-                >
-                  Build my voice profile →
-                </button>
-              </form>
-            </div>
-          )}
-
-          {/* PAGE 4: DASHBOARD */}
-          {path === '/dashboard' && (
-            <div>
-              {/* Stats row */}
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="muted" style={{fontSize: '0.8rem', fontWeight: 600}}>Posts generated</div>
-                  <div className="stat-val">{postsGenerated}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="muted" style={{fontSize: '0.8rem', fontWeight: 600}}>Plan</div>
-                  <div className="stat-val" style={{color: '#0066cc'}}>Free</div>
-                </div>
-                <div className="stat-card">
-                  <div className="muted" style={{fontSize: '0.8rem', fontWeight: 600}}>Posts remaining</div>
-                  <div className="stat-val" style={{color: postsRemaining === 0 ? '#cc0000' : 'inherit'}}>{postsRemaining}</div>
-                </div>
-              </div>
-
-              {/* Upgrade Banner if remaining is 0 */}
-              {postsRemaining === 0 && (
-                <div className="upgrade-banner">
-                  <h3>Upgrade to LinkedCraft Premium</h3>
-                  <p>You have generated your 5 free LinkedIn drafts. Upgrade to write unlimited posts in your voice.</p>
-                  <button className="btn btn-secondary" onClick={() => alert("Thank you for your interest! Stripe payment integration is coming in the next release.")}>
-                    Upgrade Plan
+              <div className="sidebar-footer">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}>
+                    {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+                  </button>
+                  <button className="btn btn-danger" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={handleLogout}>
+                    Logout
                   </button>
                 </div>
-              )}
-
-              {/* Settings Provider banner feedback */}
-              <div className="warning-alert">
-                <strong>API Config:</strong> Currently operating in <strong>{getProviderDisplay()}</strong>. 
-                {apiProvider === 'demo' ? (
-                  (serverConfig.hasServerClaudeKey || serverConfig.hasServerOpenRouterKey || serverConfig.hasServerGroqKey) ? (
-                    <span> Server-wide API key is configured. Generation runs securely via the backend! Modify this configuration anytime using the gear icon.</span>
-                  ) : (
-                    <span> No API Key needed. You can change this to live Meta Llama or Claude in the settings gear at the top right.</span>
-                  )
-                ) : apiProvider === 'ollama' ? (
-                  <span> Running locally on Ollama host at <code>{serverConfig.ollamaHost}</code>. No API Key required!</span>
-                ) : (
-                  <span> Calling external API securely via the backend server.</span>
-                )}
-              </div>
-
-              {/* Generate Trigger */}
-              <div style={{marginBottom: '40px'}}>
-                <button 
-                  className="btn btn-primary btn-block" 
-                  style={{padding: '16px', fontSize: '1.1rem'}}
-                  onClick={() => navigateTo('/generate')}
-                  disabled={postsRemaining === 0}
-                >
-                  + Generate new post
-                </button>
-              </div>
-
-              {/* History list */}
-              <div>
-                <h3 style={{marginBottom: '16px'}}>Recent Drafts</h3>
-                <div className="card" style={{padding: 0, overflow: 'hidden'}}>
-                  {userData && userData.history && userData.history.length > 0 ? (
-                    userData.history.slice(0, 5).map((item) => (
-                      <div 
-                        key={item.id} 
-                        className="history-item"
-                        style={{cursor: 'pointer'}}
-                        onClick={() => setActiveHistoryItem(item)}
-                      >
-                        <div className="history-info">
-                          <div className="history-topic">{item.topic}</div>
-                          <div className="history-meta">
-                            <span>{new Date(item.timestamp).toLocaleDateString()}</span>
-                            <span className="history-style-tag">{item.style}</span>
-                          </div>
-                        </div>
-                        <button className="btn btn-secondary" style={{padding: '4px 10px', fontSize: '0.75rem'}}>
-                          View Drafts
-                        </button>
-                      </div>
-                    ))
-                  ) : (
-                    <div style={{padding: '32px 16px', textAlign: 'center', color: '#888888'}}>
-                      No posts generated yet. Click "+ Generate new post" to create one.
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           )}
 
-          {/* PAGE 5: GENERATE PAGE */}
-          {path === '/generate' && (
-            <div>
-              <a className="back-link" onClick={(e) => { e.preventDefault(); navigateTo('/dashboard'); }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                Back to Dashboard
-              </a>
-
-              <h2>Generate a new post</h2>
-              <p className="muted" style={{marginBottom: '24px'}}>
-                Enter your topic, choose a framework style, and Claude will draft 3 posts in your tone.
-              </p>
-
-              {genError && (
-                <div className="error-alert">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                  {genError}
+          {/* Main workspace frame */}
+          <div className="main-workspace">
+            {/* PUBLIC HEADER */}
+            {!currentUser && (
+              <div style={{ padding: '20px 40px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-secondary)' }}>
+                <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.25rem' }}>
+                  ✍️ LinkedCraft <span style={{ fontSize: '0.6rem', backgroundColor: 'var(--accent-primary)', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>AGENT</span>
                 </div>
-              )}
-
-              {/* Form Input fields */}
-              {!isLoading && generatedDrafts.length === 0 && (
-                <div>
-                  <div className="form-group">
-                    <label className="form-label">What do you want to post about?</label>
-                    <textarea 
-                      className="form-textarea" 
-                      style={{minHeight: '140px'}}
-                      placeholder="Paste a rough idea, a URL, a lesson you learned, anything..."
-                      value={topicInput}
-                      onChange={(e) => setTopicInput(e.target.value)}
-                    />
-                  </div>
-
-                  <label className="form-label" style={{marginBottom: '8px'}}>Select Writing Style</label>
-                  <div className="grid-2x2">
-                    <button 
-                      type="button" 
-                      className={`style-btn ${selectedStyle === 'storytelling' ? 'selected-state' : ''}`}
-                      onClick={() => setSelectedStyle('storytelling')}
-                    >
-                      <span className="style-btn-title">Storytelling</span>
-                      <span className="style-btn-desc">Personal story with a lesson</span>
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`style-btn ${selectedStyle === 'insight' ? 'selected-state' : ''}`}
-                      onClick={() => setSelectedStyle('insight')}
-                    >
-                      <span className="style-btn-title">Insight List</span>
-                      <span className="style-btn-desc">3-5 sharp non-obvious points</span>
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`style-btn ${selectedStyle === 'contrarian' ? 'selected-state' : ''}`}
-                      onClick={() => setSelectedStyle('contrarian')}
-                    >
-                      <span className="style-btn-title">Contrarian</span>
-                      <span className="style-btn-desc">Challenge common wisdom</span>
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`style-btn ${selectedStyle === 'howto' ? 'selected-state' : ''}`}
-                      onClick={() => setSelectedStyle('howto')}
-                    >
-                      <span className="style-btn-title">How-to</span>
-                      <span className="style-btn-desc">Step-by-step practical guide</span>
-                    </button>
-                  </div>
-
-                  <button 
-                    onClick={handleGenerate} 
-                    className="btn btn-primary btn-block"
-                    style={{padding: '14px', fontSize: '1rem'}}
-                    disabled={!topicInput.trim() || postsRemaining === 0}
-                  >
-                    Generate 3 variations →
-                  </button>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button className="btn btn-secondary" style={{ padding: '8px 16px' }} onClick={() => { setAuthMode('login'); navigateTo('/login'); }}>Login</button>
+                  <button className="btn btn-primary" style={{ padding: '8px 16px' }} onClick={() => { setAuthMode('signup'); navigateTo('/signup'); }}>Get Started</button>
                 </div>
-              )}
-
-              {/* Loading State */}
-              {isLoading && (
-                <div className="loader-container card">
-                  <div className="spinner"></div>
-                  <div className="loader-message">{loadingMessage}</div>
-                  <div className="muted" style={{fontSize: '0.8rem', fontStyle: 'italic'}}>Creating your custom drafts...</div>
-                </div>
-              )}
-
-              {/* Generation Draft outputs */}
-              {!isLoading && generatedDrafts.length > 0 && (
-                <div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-                    <h3>Your Generated Drafts</h3>
-                    <button 
-                      className="btn btn-secondary" 
-                      style={{padding: '6px 12px', fontSize: '0.85rem'}}
-                      onClick={() => {
-                        setGeneratedDrafts([]);
-                        setTopicInput('');
-                      }}
-                    >
-                      Write another post
-                    </button>
-                  </div>
-
-                  {generatedDrafts.map((draftText, idx) => (
-                    <div key={idx} className="variation-card">
-                      <div className="variation-header">
-                        <span className="variation-tag">Variation {idx + 1}</span>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button 
-                            className="btn btn-secondary" 
-                            style={{padding: '6px 14px', fontSize: '0.8rem', minWidth: '90px'}}
-                            onClick={() => copyToClipboard(draftText, idx)}
-                          >
-                            {copiedIndex === idx ? 'Copied ✓' : 'Copy'}
-                          </button>
-                          <button 
-                            className="btn btn-primary" 
-                            style={{padding: '6px 14px', fontSize: '0.8rem', backgroundColor: '#0077b5', borderColor: '#0077b5', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '4px'}}
-                            onClick={() => publishToLinkedIn(draftText)}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                            Publish
-                          </button>
-                        </div>
-                      </div>
-                      <div className="variation-body">{draftText}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-            </div>
-          )}
-
-          {/* PAGE 6: LIVE FEED PAGE */}
-          {path === '/feed' && (
-            <div>
-              <a className="back-link" onClick={(e) => { e.preventDefault(); navigateTo('/dashboard'); }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                Back to Dashboard
-              </a>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <div>
-                  <h2>LinkedIn Live Feed</h2>
-                  <p className="muted" style={{ marginBottom: 0 }}>
-                    Previewing posts published from your account.
-                  </p>
-                </div>
-                <button 
-                  className="btn btn-secondary" 
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  onClick={async () => {
-                    try {
-                      const res = await apiRequest('/api/user');
-                      setUserData(res.user);
-                    } catch (e) {
-                      console.error("Failed to refresh feed:", e);
-                    }
-                  }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
-                  Refresh Feed
-                </button>
               </div>
+            )}
 
-              {userData && userData.publishedPosts && userData.publishedPosts.length > 0 ? (
-                userData.publishedPosts.map((post) => {
-                  const ageInMinutes = Math.floor((Date.now() - post.timestamp) / 60000);
-                  const seed = post.id ? post.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) : 100;
-                  const baseLikes = 15 + (seed % 35);
-                  const likesGrowth = Math.min(120, Math.floor(ageInMinutes * 0.4));
-                  const likes = baseLikes + likesGrowth;
-                  const comments = Math.floor(likes * 0.15) + (seed % 4);
-                  const reposts = Math.floor(likes * 0.08) + (seed % 2);
-
-                  const userInitial = currentUser ? currentUser.charAt(0).toUpperCase() : 'U';
-                  const userName = currentUser ? currentUser.split('@')[0] : 'You';
-                  
-                  return (
-                    <div key={post.id} className="card" style={{ padding: '20px', marginBottom: '20px', border: '1px solid #e0e0e0', borderRadius: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                          <div style={{
-                            width: '48px',
-                            height: '48px',
-                            borderRadius: '50%',
-                            backgroundColor: '#0077b5',
-                            color: '#ffffff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: 'bold',
-                            fontSize: '1.2rem',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                          }}>
-                            {userInitial}
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: '700', color: '#111111', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              {userName}
-                              <span style={{ fontWeight: 'normal', color: '#666666', fontSize: '0.85rem' }}>• 1st</span>
-                            </div>
-                            <div style={{ fontSize: '0.75rem', color: '#666666', lineHeight: '1.2', marginTop: '2px' }}>
-                              Founder & CEO | Build in Public
-                            </div>
-                            <div style={{ fontSize: '0.75rem', color: '#888888', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                              <span>{formatTimeAgo(post.timestamp)}</span>
-                              <span>•</span>
-                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block' }}><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        <span style={{
-                          fontSize: '0.7rem',
-                          fontWeight: 'bold',
-                          color: post.live ? '#0077b5' : '#666666',
-                          backgroundColor: post.live ? '#eef3f8' : '#f3f3f3',
-                          padding: '3px 8px',
-                          borderRadius: '12px',
-                          border: `1px solid ${post.live ? '#d0e1f0' : '#e0e0e0'}`
-                        }}>
-                          {post.live ? 'LIVE API' : 'SIMULATED'}
-                        </span>
-                      </div>
-
-                      <div style={{ 
-                        whiteSpace: 'pre-wrap', 
-                        fontSize: '0.92rem', 
-                        color: '#191919', 
-                        lineHeight: '1.5',
-                        marginBottom: '14px',
-                        fontFamily: '-apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
-                      }}>
-                        {post.text}
-                      </div>
-
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        paddingBottom: '10px', 
-                        borderBottom: '1px solid #eeeeee',
-                        fontSize: '0.75rem',
-                        color: '#666666'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <span style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#0077b5', color: '#fff', fontSize: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginRight: '-2px', zIndex: 3, border: '1px solid #fff' }}>👍</span>
-                            <span style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#6fcf97', color: '#fff', fontSize: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginRight: '-2px', zIndex: 2, border: '1px solid #fff' }}>👏</span>
-                            <span style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#f2c94c', color: '#fff', fontSize: '8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, border: '1px solid #fff' }}>💡</span>
-                          </span>
-                          <span>{likes}</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <span>{comments} comments</span>
-                          <span>•</span>
-                          <span>{reposts} reposts</span>
-                        </div>
-                      </div>
-
-                      <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        paddingTop: '8px',
-                        fontSize: '0.85rem',
-                        fontWeight: '600',
-                        color: '#666666'
-                      }}>
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666666', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '4px', transition: 'background-color 0.2s' }} className="feed-action-btn">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
-                          Like
-                        </button>
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666666', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '4px', transition: 'background-color 0.2s' }} className="feed-action-btn">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                          Comment
-                        </button>
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666666', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '4px', transition: 'background-color 0.2s' }} className="feed-action-btn">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                          Repost
-                        </button>
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666666', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '4px', transition: 'background-color 0.2s' }} className="feed-action-btn">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                          Send
-                        </button>
-                      </div>
+            <div className="workspace-content">
+              
+              {/* PAGE 1: HERO LANDING PAGE */}
+              {path === '/' && !currentUser && (
+                <div>
+                  <div className="landing-hero">
+                    <h1>Write LinkedIn posts that sound exactly like you.</h1>
+                    <p>Train LinkedCraft on your writing style and let AI generate authentic content, build your personal brand, and grow your audience.</p>
+                    <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+                      <button className="btn btn-primary" style={{ padding: '16px 32px', fontSize: '1rem' }} onClick={() => { setAuthMode('signup'); navigateTo('/signup'); }}>Build Your Voice Profile Free</button>
+                      <button className="btn btn-secondary" style={{ padding: '16px 32px', fontSize: '1rem' }} onClick={() => navigateTo('/login')}>See Plans</button>
                     </div>
-                  );
-                })
-              ) : (
-                <div className="card" style={{ textAlign: 'center', padding: '48px 20px', color: '#888888' }}>
-                  <span style={{ fontSize: '3rem', display: 'block', marginBottom: '16px' }}>📭</span>
-                  <h4 style={{ color: '#111111', marginBottom: '8px' }}>Your LinkedIn Feed is Empty</h4>
-                  <p className="muted" style={{ maxWidth: '400px', margin: '0 auto 20px auto', fontSize: '0.9rem' }}>
-                    You haven't published any drafts to LinkedIn yet. Generate a post variation and click "Publish to LinkedIn".
-                  </p>
-                  <button className="btn btn-primary" onClick={() => navigateTo('/generate')}>
-                    Generate & Publish
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* SETTINGS MODAL */}
-          {showSettingsModal && (
-            <div className="modal-overlay" onClick={() => setShowSettingsModal(false)}>
-              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close" onClick={() => setShowSettingsModal(false)}>&times;</button>
-                <h3 style={{marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px'}}>
-                  ⚙️ API & Settings Configuration
-                </h3>
-
-                <form onSubmit={handleSaveSettings}>
-                  <div className="form-group">
-                    <label className="form-label">API Provider Mode</label>
-                    <select 
-                      className="form-input" 
-                      value={apiProvider} 
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setApiProvider(val);
-                        if (val === 'openrouter') {
-                          setModel('meta-llama/llama-3.1-70b-instruct');
-                        } else if (val === 'anthropic') {
-                          setModel('claude-3-5-haiku-20241022');
-                        } else if (val === 'groq') {
-                          setModel('llama-3.3-70b-versatile');
-                        } else if (val === 'ollama') {
-                          setModel('llama3');
-                        }
-                      }}
-                      style={{padding: '10px'}}
-                    >
-                      <option value="demo">Demo Mode (Simulated AI / Server Key Fallback)</option>
-                      <option value="groq">Groq Cloud (High-speed Llama 3)</option>
-                      <option value="ollama">Ollama (Run Llama 3 100% Local & Free)</option>
-                      <option value="anthropic">Anthropic Claude API (Secure Direct proxy)</option>
-                      <option value="openrouter">OpenRouter API (Proxy)</option>
-                    </select>
                   </div>
 
-                  {apiProvider === 'ollama' && (
-                    <div className="warning-alert" style={{ marginTop: '0', marginBottom: '20px', fontSize: '0.8rem' }}>
-                      💡 <strong>Local Server Required:</strong> To use Ollama, you must have the Ollama app installed and running locally on your computer. Run <code>ollama run llama3</code> in your terminal to start the server and pull the Llama 3 model.
+                  <div className="features-grid">
+                    <div className="card" style={{ marginBottom: 0 }}>
+                      <h3>🧠 Persistent Memory</h3>
+                      <p style={{ marginTop: '8px' }}>Stores your niche, writing parameters, and growth goals. Automatically formats all drafts to fit your persona.</p>
                     </div>
-                  )}
-
-                  {apiProvider !== 'demo' && apiProvider !== 'ollama' && (
-                    <div className="form-group">
-                      <label className="form-label">
-                        {apiProvider === 'anthropic' ? 'Anthropic API Key' : 
-                         apiProvider === 'groq' ? 'Groq API Key' : 'OpenRouter API Key'}
-                      </label>
-                      <input 
-                        type="password" 
-                        className="form-input" 
-                        placeholder="Paste API Key (optional if configured in .env on server)"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                      />
+                    <div className="card" style={{ marginBottom: 0 }}>
+                      <h3>💬 Agent Chat</h3>
+                      <p style={{ marginTop: '8px' }}>ChatGPT-style companion. Refine drafts with phrases like "Make it more controversial" or "Create a carousel".</p>
                     </div>
-                  )}
-
-                  {apiProvider !== 'demo' && (
-                    <div className="form-group">
-                      <label className="form-label">Model Name</label>
-                      <input 
-                        type="text" 
-                        className="form-input" 
-                        placeholder={
-                          apiProvider === 'groq' ? 'e.g. llama-3.3-70b-versatile' :
-                          apiProvider === 'ollama' ? 'e.g. llama3, llama3.2' : 
-                          apiProvider === 'openrouter' ? 'e.g. meta-llama/llama-3.1-70b-instruct' : 'e.g. claude-3-5-haiku-20241022'
-                        }
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                      />
+                    <div className="card" style={{ marginBottom: 0 }}>
+                      <h3>📅 Content Calendar</h3>
+                      <p style={{ marginTop: '8px' }}>Generate up to 30 days of schedules containing ready-made posts with a single click. Keep consistent.</p>
                     </div>
-                  )}
+                  </div>
 
-                  {apiProvider === 'anthropic' && (
-                    <div className="form-group">
-                      <label className="form-label">API Endpoint</label>
-                      <input 
-                        type="text" 
-                        className="form-input" 
-                        placeholder="https://api.anthropic.com/v1/messages"
-                        value={apiEndpoint}
-                        onChange={(e) => setApiEndpoint(e.target.value)}
-                      />
+                  <div style={{ textAlign: 'center', margin: '80px 0 40px 0' }}>
+                    <h2>Premium SaaS Pricing</h2>
+                    <p style={{ marginTop: '8px' }}>Flexible plans suitable for personal builders and agencies.</p>
+                    <div className="pricing-grid">
+                      <div className="card pricing-card" style={{ marginBottom: 0 }}>
+                        <div>
+                          <h3>Free Plan</h3>
+                          <p>Basic post generation features</p>
+                          <div className="pricing-price">Free</div>
+                          <ul style={{ listStyle: 'none', margin: '20px 0', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <li>✓ 5 post draft generations</li>
+                            <li>✓ Setup 2 voice profile samples</li>
+                            <li>✓ Basic standard styles</li>
+                          </ul>
+                        </div>
+                        <button className="btn btn-secondary" onClick={() => { setAuthMode('signup'); navigateTo('/signup'); }}>Start Free</button>
+                      </div>
+                      <div className="card pricing-card premium" style={{ marginBottom: 0 }}>
+                        <div style={{ position: 'relative' }}>
+                          <span style={{ position: 'absolute', top: '-40px', right: '-12px' }} className="badge badge-pro">Recommended</span>
+                          <h3>Pro growth</h3>
+                          <p>Advanced AI scheduling and metrics</p>
+                          <div className="pricing-price">$29<span style={{ fontSize: '1rem', fontWeight: 500 }}>/mo</span></div>
+                          <ul style={{ listStyle: 'none', margin: '20px 0', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <li>✓ Unlimited post generation</li>
+                            <li>✓ Dynamic AI chat & context edit</li>
+                            <li>✓ Content Planner (30-day schedules)</li>
+                            <li>✓ LinkedIn OAuth connection & profile audit</li>
+                            <li>✓ suggested commenting templates</li>
+                          </ul>
+                        </div>
+                        <button className="btn btn-primary" onClick={() => { setAuthMode('signup'); navigateTo('/signup'); }}>Upgrade to Pro</button>
+                      </div>
                     </div>
-                  )}
+                  </div>
+                </div>
+              )}
 
-                  <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #eeeeee' }}>
-                    <h4 style={{ fontSize: '0.9rem', marginBottom: '12px', color: '#111111' }}>🔗 LinkedIn Integration Settings</h4>
-                    <p className="muted" style={{ fontSize: '0.8rem', marginBottom: '12px', lineHeight: '1.4' }}>
-                      Leave these empty to run in **Simulated Mode** (posts will go to the local Live Feed Preview). To enable real automatic sharing, enter access tokens from the LinkedIn Developer Portal.
+              {/* PAGE 2: AUTH SIGNUP / LOGIN */}
+              {(path === '/login' || path === '/signup') && (
+                <div style={{ maxWidth: '420px', margin: '60px auto' }}>
+                  <div className="card">
+                    <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>
+                      {path === '/signup' ? 'Create Account' : 'Welcome Back'}
+                    </h2>
+                    {authError && <div className="alert alert-error">{authError}</div>}
+                    <form onSubmit={handleAuth}>
+                      <div className="form-group">
+                        <label className="form-label">Email</label>
+                        <input type="email" className="form-control" placeholder="you@example.com" value={authEmail} onChange={e => setAuthEmail(e.target.value)} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Password</label>
+                        <input type="password" className="form-control" placeholder="••••••••" value={authPassword} onChange={e => setAuthPassword(e.target.value)} required />
+                      </div>
+                      <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '10px' }}>
+                        {path === '/signup' ? 'Register Account' : 'Authenticate'}
+                      </button>
+                    </form>
+                    <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9rem' }}>
+                      {path === '/signup' ? (
+                        <span>Already have an account? <a href="#/login">Login here</a></span>
+                      ) : (
+                        <span>New to LinkedCraft? <a href="#/signup">Sign up here</a></span>
+                      )}
                     </p>
-                    
-                    <div className="form-group">
-                      <label className="form-label">LinkedIn Access Token</label>
-                      <input 
-                        type="password" 
-                        className="form-input" 
-                        placeholder="Paste OAuth Access Token (starts with AQ...)"
-                        value={linkedinAccessToken}
-                        onChange={(e) => setLinkedinAccessToken(e.target.value)}
-                      />
-                    </div>
+                  </div>
+                </div>
+              )}
 
+              {/* PAGE 3: ONBOARDING VOICE */}
+              {path === '/onboarding' && (
+                <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+                  <h2>Build Your Writing Persona</h2>
+                  <p style={{ marginBottom: '24px' }}>LinkedCraft analyzes your sentence patterns, rhythm, and style to ghostwrite posts that sound exactly like you.</p>
+                  {onboardError && <div className="alert alert-error">{onboardError}</div>}
+                  
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+                    <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => {
+                      setOnboardSample1(FOUNDER_SAMPLES[0]);
+                      setOnboardSample2(FOUNDER_SAMPLES[1]);
+                      setOnboardSample3(FOUNDER_SAMPLES[2]);
+                    }}>💡 Load Demo Founder Writing Samples</button>
+                  </div>
+
+                  <form onSubmit={handleOnboarding}>
                     <div className="form-group">
-                      <label className="form-label">LinkedIn Person URN</label>
-                      <input 
-                        type="text" 
-                        className="form-input" 
-                        placeholder="e.g. urn:li:person:AbC123XyZ"
-                        value={linkedinPersonUrn}
-                        onChange={(e) => setLinkedinPersonUrn(e.target.value)}
-                      />
+                      <label className="form-label">Voice Sample 1 (Required)</label>
+                      <textarea className="form-control" style={{ minHeight: '120px' }} placeholder="Paste a post you previously shared on LinkedIn..." value={onboardSample1} onChange={e => setOnboardSample1(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Voice Sample 2 (Required)</label>
+                      <textarea className="form-control" style={{ minHeight: '120px' }} placeholder="Paste a second post to help capture tone diversity..." value={onboardSample2} onChange={e => setOnboardSample2(e.target.value)} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Voice Sample 3 (Optional)</label>
+                      <textarea className="form-control" style={{ minHeight: '120px' }} placeholder="Paste another sample (optional)..." value={onboardSample3} onChange={e => setOnboardSample3(e.target.value)} />
+                    </div>
+                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '16px' }}>Train Voice Engine →</button>
+                  </form>
+                </div>
+              )}
+
+              {/* PAGE 4: MAIN DASHBOARD */}
+              {path === '/dashboard' && userData && (
+                <div>
+                  <div className="view-header">
+                    <div>
+                      <h1 className="view-title">Growth Dashboard</h1>
+                      <p>Generate fresh post drafts in your personal voice.</p>
+                    </div>
+                    <div>
+                      <span className={`badge ${userData.plan === 'pro' ? 'badge-pro' : 'badge-free'}`}>
+                        {userData.plan} tier
+                      </span>
                     </div>
                   </div>
 
-                  <div style={{display: 'flex', gap: '12px', marginTop: '24px'}}>
-                    <button type="submit" className="btn btn-primary" style={{flex: 1}}>
-                      Save Configuration
-                    </button>
-                    <button type="button" className="btn btn-secondary" onClick={() => setShowSettingsModal(false)}>
-                      Cancel
+                  {/* Limit warnings */}
+                  {userData.plan === 'free' && (5 - (userData.postsGenerated || 0)) <= 0 && (
+                    <div className="card" style={{ borderColor: 'var(--accent-warning)', backgroundColor: 'rgba(245, 158, 11, 0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <h3>Credits Exhausted</h3>
+                        <p style={{ fontSize: '0.9rem' }}>You have reached your limit of 5 drafts. Unlock unlimited generations with Pro.</p>
+                      </div>
+                      <button className="btn btn-primary" onClick={handleUpgrade}>Upgrade to Pro</button>
+                    </div>
+                  )}
+
+                  {/* Main post generator panel */}
+                  <div className="card">
+                    <div className="form-group">
+                      <label className="form-label">What is your post about?</label>
+                      <textarea className="form-control" style={{ minHeight: '100px' }} placeholder="E.g. bootstrapping software, building in public, lessons from hiring..." value={topicInput} onChange={e => setTopicInput(e.target.value)} />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Writing Framework Style</label>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+                        {['storytelling', 'insight', 'contrarian', 'howto'].map(s => (
+                          <button key={s} className={`btn ${selectedStyle === s ? 'btn-primary' : 'btn-secondary'}`} style={{ textTransform: 'capitalize' }} onClick={() => setSelectedStyle(s)}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button className="btn btn-primary" style={{ width: '100%', marginTop: '12px' }} onClick={generateDrafts} disabled={isLoading || !topicInput.trim()}>
+                      {isLoading ? 'Drafting variations...' : 'Generate 3 Variations'}
                     </button>
                   </div>
-                </form>
 
-                <div style={{marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #eeeeee'}}>
-                  <h4 style={{fontSize: '0.9rem', marginBottom: '8px', color: '#cc0000'}}>System Reset</h4>
-                  <button type="button" className="btn btn-danger" style={{padding: '8px 16px', fontSize: '0.8rem'}} onClick={handleResetHistory}>
-                    Reset Account Data & History
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* HISTORICAL DRAFTS MODAL */}
-          {activeHistoryItem && (
-            <div className="modal-overlay" onClick={() => setActiveHistoryItem(null)}>
-              <div className="modal-content" style={{maxWidth: '600px'}} onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close" onClick={() => setActiveHistoryItem(null)}>&times;</button>
-                
-                <h3 style={{fontSize: '1.2rem', marginBottom: '4px'}}>{activeHistoryItem.topic}</h3>
-                <div className="history-meta" style={{marginBottom: '20px'}}>
-                  <span>Generated on {new Date(activeHistoryItem.timestamp).toLocaleString()}</span>
-                  <span className="history-style-tag">{activeHistoryItem.style}</span>
-                </div>
-
-                <div style={{maxHeight: '400px', overflowY: 'auto', paddingRight: '4px'}}>
-                  {activeHistoryItem.drafts.map((draftText, idx) => (
-                    <div key={idx} className="variation-card" style={{padding: '16px', marginBottom: '16px'}}>
-                      <div className="variation-header">
-                        <span className="variation-tag" style={{fontSize: '0.7rem'}}>Variation {idx + 1}</span>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button 
-                            className="btn btn-secondary" 
-                            style={{padding: '4px 10px', fontSize: '0.75rem', minWidth: '70px'}}
-                            onClick={() => copyToClipboard(draftText, idx)}
-                          >
-                            {copiedIndex === idx ? 'Copied ✓' : 'Copy'}
-                          </button>
-                          <button 
-                            className="btn btn-primary" 
-                            style={{padding: '4px 10px', fontSize: '0.75rem', backgroundColor: '#0077b5', borderColor: '#0077b5', color: '#ffffff', display: 'inline-flex', alignItems: 'center', gap: '4px'}}
-                            onClick={() => {
-                              setActiveHistoryItem(null);
-                              publishToLinkedIn(draftText);
-                            }}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                            Publish
-                          </button>
-                        </div>
-                      </div>
-                      <div className="variation-body" style={{fontSize: '0.9rem'}}>{draftText}</div>
+                  {/* Drafting progress indicator */}
+                  {isLoading && (
+                    <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
+                      <div style={{ width: '40px', height: '40px', border: '3px solid var(--border-color)', borderTopColor: 'var(--accent-primary)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px auto' }}></div>
+                      <div style={{ fontWeight: 600 }}>{loadingMessage}</div>
+                      <p style={{ fontSize: '0.8rem', fontStyle: 'italic', marginTop: '8px' }}>Tailoring post structure based on memory profile...</p>
                     </div>
-                  ))}
-                </div>
+                  )}
 
-                <div style={{display: 'flex', justifyContent: 'flex-end', marginTop: '16px'}}>
-                  <button className="btn btn-primary" onClick={() => setActiveHistoryItem(null)}>
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* PUBLISHING OVERLAY */}
-          {isPublishing && (
-            <div className="modal-overlay" style={{ zIndex: 1100 }}>
-              <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '36px 24px' }}>
-                {!publishingError ? (
-                  <div>
-                    {publishSuccess ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                        <div style={{
-                          width: '60px',
-                          height: '60px',
-                          borderRadius: '50%',
-                          backgroundColor: '#e1f5fe',
-                          color: '#0077b5',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '2rem',
-                          fontWeight: 'bold',
-                          margin: '0 auto'
-                        }}>
-                          ✓
-                        </div>
-                        <h3 style={{ color: '#0077b5' }}>Published!</h3>
-                        <p className="muted" style={{ margin: 0 }}>{publishingMessage}</p>
+                  {/* Generation Results */}
+                  {generatedDrafts.length > 0 && !isLoading && (
+                    <div>
+                      <h3 style={{ marginBottom: '16px' }}>Generated Variations</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {generatedDrafts.map((d, idx) => (
+                          <div key={idx} className="card">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', marginBottom: '12px' }}>
+                              <span style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>Variation {idx + 1}</span>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => {
+                                  navigator.clipboard.writeText(d);
+                                  setCopiedIndex(idx);
+                                  setTimeout(() => setCopiedIndex(null), 2000);
+                                }}>
+                                  {copiedIndex === idx ? 'Copied ✓' : 'Copy'}
+                                </button>
+                                <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={async () => {
+                                  // Add directly to calendar
+                                  try {
+                                    await apiRequest('/api/calendar', 'POST', {
+                                      topic: topicInput,
+                                      style: selectedStyle,
+                                      postText: d,
+                                      status: 'planned'
+                                    });
+                                    addToast("Added to content calendar!");
+                                  } catch (e) {
+                                    addToast("Failed to schedule.");
+                                  }
+                                }}>📅 Schedule</button>
+                                <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => handlePublishPost(d)}>Publish</button>
+                              </div>
+                            </div>
+                            <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.95rem' }}>{d}</div>
+                          </div>
+                        ))}
                       </div>
+                    </div>
+                  )}
+
+                  {/* General Stats summary */}
+                  <div style={{ marginTop: '40px' }}>
+                    <h3>Recent Account Log</h3>
+                    <div className="card" style={{ padding: 0, overflow: 'hidden', marginTop: '12px' }}>
+                      {userData.history && userData.history.length > 0 ? (
+                        userData.history.slice(0, 3).map(h => (
+                          <div key={h.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--border-color)' }}>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{h.topic}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{new Date(h.timestamp).toLocaleDateString()} • {h.style}</div>
+                            </div>
+                            <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={() => {
+                              setGeneratedDrafts(h.drafts);
+                              setTopicInput(h.topic);
+                              setSelectedStyle(h.style);
+                              navigateTo('/dashboard');
+                            }}>Load Drafts</button>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>No recent generations. Make your first draft now!</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* PAGE 5: AI CHAT AGENT */}
+              {path === '/chat' && (
+                <div>
+                  <div className="view-header">
+                    <div>
+                      <h1 className="view-title">AI chat Strategist</h1>
+                      <p>Brainstorm, refine and edit posts in natural conversation.</p>
+                    </div>
+                    <button className="btn btn-primary" onClick={createConversation}>+ New Discussion</button>
+                  </div>
+
+                  <div className="chat-layout">
+                    {/* Threads sidebar */}
+                    <div className="chat-threads">
+                      <div style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.8rem', borderBottom: '1px solid var(--border-color)', textTransform: 'uppercase', letter-spacing: '0.02em', color: 'var(--text-secondary)' }}>Conversations</div>
+                      <div className="thread-list">
+                        {conversations.map(c => (
+                          <div key={c.id} className={`thread-item ${activeConvId === c.id ? 'active' : ''}`} onClick={() => loadChatDetails(c.id)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.title || 'Discussion'}</span>
+                            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.9rem' }} onClick={(e) => deleteConversation(c.id, e)}>×</button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Messaging body */}
+                    <div className="chat-window">
+                      {activeConv ? (
+                        <React.Fragment>
+                          <div className="chat-messages">
+                            <div className="message-bubble assistant">
+                              <strong>LinkedCraft Strategist:</strong>
+                              <p>Welcome! I know you write about <strong>{niche || 'your tech niche'}</strong> for an audience of <strong>{targetAudience || 'startup founders'}</strong>. What would you like to build today?</p>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                                <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={() => setChatInput("Write a storytelling post about bootstrapping my first company.")}>"Write a bootstrap story"</button>
+                                <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={() => setChatInput("Plan 3 days of content ideas around software development.")}>"Plan 3 days of ideas"</button>
+                              </div>
+                            </div>
+
+                            {activeConv.messages && activeConv.messages.map(m => (
+                              <div key={m.id} className={`message-bubble ${m.role}`}>
+                                <strong>{m.role === 'user' ? 'You' : 'LinkedCraft Strategist'}:</strong>
+                                <div style={{ marginTop: '6px', whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: marked.parse(m.content) }} />
+                                
+                                {m.role === 'assistant' && m.content.toLowerCase().includes('variation') && (
+                                  <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                                    <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={() => {
+                                      navigator.clipboard.writeText(m.content);
+                                      addToast("Copied to clipboard!");
+                                    }}>Copy Answer</button>
+                                    <button className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={() => handlePublishPost(m.content)}>Publish Directly</button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                            {isChatSending && (
+                              <div className="message-bubble assistant">
+                                <strong>LinkedCraft Strategist:</strong>
+                                <p style={{ fontStyle: 'italic' }}>Writing message response...</p>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <form onSubmit={sendChatMessage} className="chat-input-area">
+                            <input type="text" className="form-control" placeholder="Ask to rewrite, change tone, generate hooks..." value={chatInput} onChange={e => setChatInput(e.target.value)} disabled={isChatSending} />
+                            <button type="submit" className="btn btn-primary" disabled={isChatSending || !chatInput.trim()}>Send</button>
+                          </form>
+                        </React.Fragment>
+                      ) : (
+                        <div style={{ display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                          Select or create a conversation thread to begin.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* PAGE 6: CONTENT CALENDAR */}
+              {path === '/calendar' && (
+                <div>
+                  <div className="view-header">
+                    <div>
+                      <h1 className="view-title">AI Content Planner</h1>
+                      <p>Generate, edit, and queue posts on your content timeline.</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <select className="form-control" style={{ width: '130px', padding: '8px' }} value={planDays} onChange={e => setPlanDays(Number(e.target.value))}>
+                        <option value="3">3 Days</option>
+                        <option value="7">7 Days (Free)</option>
+                        <option value="14">14 Days (Pro)</option>
+                        <option value="30">30 Days (Pro)</option>
+                      </select>
+                      <button className="btn btn-primary" onClick={generateCalendarPlan} disabled={isCalendarGenerating}>
+                        {isCalendarGenerating ? 'Generating schedule...' : 'Plan Schedule'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="alert alert-warning">
+                    <strong>Autonomous Guard:</strong> LinkedCraft never posts automatically. You must preview, approve, and authorize every single publish action below.
+                  </div>
+
+                  {isCalendarGenerating && (
+                    <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
+                      <div style={{ width: '30px', height: '30px', border: '3px solid var(--border-color)', borderTopColor: 'var(--accent-primary)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 12px auto' }}></div>
+                      <p>Drafting custom scheduled posts matching your voice profile parameters...</p>
+                    </div>
+                  )}
+
+                  <div className="calendar-timeline">
+                    {calendarItems.length > 0 ? (
+                      calendarItems.map(item => {
+                        const dateParts = item.date.split('-');
+                        const dispDay = dateParts[2] || '??';
+                        const dispMonth = dateParts[1] ? new Date(item.date).toLocaleString('default', { month: 'short' }) : 'PLAN';
+
+                        return (
+                          <div key={item.id} className="calendar-item">
+                            <div className="calendar-date-badge">
+                              <span className="calendar-date-day">{dispDay}</span>
+                              <span className="calendar-date-month">{dispMonth}</span>
+                            </div>
+                            
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                                <div>
+                                  <h4 style={{ fontSize: '1rem' }}>{item.topic}</h4>
+                                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px', alignItems: 'center' }}>
+                                    <span className={`badge ${item.status === 'published' ? 'badge-success' : item.status === 'approved' ? 'badge-info' : 'badge-warning'}`}>
+                                      {item.status}
+                                    </span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>⏰ {item.scheduledTime}</span>
+                                  </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => setEditingItem(item)}>Edit</button>
+                                  {item.status === 'planned' && (
+                                    <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.8rem', color: 'var(--accent-success)' }} onClick={() => handleApproveCalendar(item.id, 'approved')}>Approve</button>
+                                  )}
+                                  {item.status === 'approved' && (
+                                    <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => handlePublishPost(item.postText, item.id)}>Publish Live</button>
+                                  )}
+                                  <button className="btn btn-danger" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => handleDeleteCalendar(item.id)}>Remove</button>
+                                </div>
+                              </div>
+                              <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', backgroundColor: 'var(--bg-primary)', padding: '14px', borderRadius: '6px', border: '1px solid var(--border-color)', marginTop: '10px' }}>{item.postText}</div>
+                            </div>
+                          </div>
+                        );
+                      })
                     ) : (
-                      <div className="loader-container" style={{ padding: 0 }}>
-                        <div className="spinner" style={{ borderTopColor: '#0077b5' }}></div>
-                        <div className="loader-message" style={{ color: '#0077b5', marginTop: '12px' }}>{publishingMessage}</div>
-                        <p className="muted" style={{ fontSize: '0.8rem', marginTop: '8px', fontStyle: 'italic' }}>
-                          {(userData && userData.linkedinAccessToken) ? 'Publishing to live LinkedIn Feed...' : 'Running in Simulated Mode...'}
+                      <div className="card" style={{ textAlign: 'center', padding: '40px' }}>No calendar items scheduled yet. Choose plan length and click "Plan Schedule".</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* CALENDAR POST EDIT MODAL */}
+              {editingItem && (
+                <div className="modal-overlay">
+                  <div className="modal-container">
+                    <button className="modal-close" onClick={() => setEditingItem(null)}>&times;</button>
+                    <h3>Modify Planned Post</h3>
+                    <form onSubmit={handleSaveCalendarEdit} style={{ marginTop: '16px' }}>
+                      <div className="form-group">
+                        <label className="form-label">Scheduled Date</label>
+                        <input type="date" className="form-control" value={editingItem.date} onChange={e => setEditingItem({ ...editingItem, date: e.target.value })} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Scheduled Time (HH:MM)</label>
+                        <input type="text" className="form-control" placeholder="09:00" value={editingItem.scheduledTime} onChange={e => setEditingItem({ ...editingItem, scheduledTime: e.target.value })} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Draft Content</label>
+                        <textarea className="form-control" style={{ minHeight: '180px' }} value={editingItem.postText} onChange={e => setEditingItem({ ...editingItem, postText: e.target.value })} required />
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                        <button type="button" className="btn btn-secondary" onClick={() => setEditingItem(null)}>Cancel</button>
+                        <button type="submit" className="btn btn-primary">Save Changes</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* PAGE 7: GROWTH ANALYTICS */}
+              {path === '/analytics' && (
+                <div>
+                  <div className="view-header">
+                    <div>
+                      <h1 className="view-title">Growth Analytics</h1>
+                      <p>Monitor generated output breakdown, publishing metrics, and personal branding audits.</p>
+                    </div>
+                  </div>
+
+                  {analyticsData ? (
+                    <div>
+                      <div className="stats-row">
+                        <div className="stat-box">
+                          <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>POSTS GENERATED</div>
+                          <div className="stat-number">{analyticsData.postsGenerated}</div>
+                          <p style={{ fontSize: '0.75rem' }}>Across all history logs</p>
+                        </div>
+                        <div className="stat-box">
+                          <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>POSTS PUBLISHED</div>
+                          <div className="stat-number">{analyticsData.postsPublished}</div>
+                          <p style={{ fontSize: '0.75rem' }}>Live & simulated publications</p>
+                        </div>
+                        <div className="stat-box">
+                          <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>BRAND ENGAGEMENT ESTIMATE</div>
+                          <div className="stat-number">4.8%</div>
+                          <p style={{ fontSize: '0.75rem' }}>Based on recent voice alignment</p>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+                        {/* Categories progress breakdown */}
+                        <div className="card">
+                          <h3 className="card-title">Framework Style Usage</h3>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {Object.entries(analyticsData.categories || {}).map(([cat, val]) => {
+                              const maxVal = Math.max(1, ...Object.values(analyticsData.categories));
+                              const pct = Math.floor((val / maxVal) * 100);
+                              return (
+                                <div key={cat}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
+                                    <span style={{ textTransform: 'capitalize', fontWeight: 600 }}>{cat}</span>
+                                    <span>{val} generations</span>
+                                  </div>
+                                  <div style={{ height: '8px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px', overflow: 'hidden' }}>
+                                    <div style={{ width: `${pct}%`, height: '100%', backgroundColor: 'var(--accent-primary)', borderRadius: '4px' }}></div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Strategist insights */}
+                        <div className="card">
+                          <h3 className="card-title">AI Strategist Recommendations</h3>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {analyticsData.insights && analyticsData.insights.map(ins => (
+                              <div key={ins.id} style={{ paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <h4 style={{ fontSize: '0.9rem' }}>{ins.title}</h4>
+                                  <span className={`badge ${ins.impact === 'High' ? 'badge-pro' : 'badge-free'}`} style={{ fontSize: '0.65rem' }}>{ins.impact} impact</span>
+                                </div>
+                                <p style={{ fontSize: '0.8rem', marginTop: '6px' }}>{ins.content}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="card" style={{ textAlign: 'center', padding: '40px' }}>Loading analytics dashboard data...</div>
+                  )}
+                </div>
+              )}
+
+              {/* PAGE 8: MEMORY CENTER */}
+              {path === '/memory' && (
+                <div>
+                  <div className="view-header">
+                    <div>
+                      <h1 className="view-title">Growth Memory Profile</h1>
+                      <p>Configure context preferences the AI should reference to customize all future drafts.</p>
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <form onSubmit={handleSaveMemory}>
+                      <div className="form-group">
+                        <label className="form-label">Niche / Core Topic Focus</label>
+                        <input type="text" className="form-control" placeholder="E.g., B2B SaaS building, growth marketing metrics" value={niche} onChange={e => setNiche(e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Industry Classification</label>
+                        <input type="text" className="form-control" placeholder="E.g., Software, Venture Capital, E-Commerce" value={industry} onChange={e => setIndustry(e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Target Audience Persona</label>
+                        <input type="text" className="form-control" placeholder="E.g., Early-stage Startup Founders, HR Directors" value={targetAudience} onChange={e => setTargetAudience(e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Writing Style / Accent Guidelines</label>
+                        <input type="text" className="form-control" placeholder="E.g., Short punchy sentences, direct storytelling, no fluff" value={writingStyle} onChange={e => setWritingStyle(e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Overall Personal Branding Goals</label>
+                        <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="E.g., Establish thought leadership, generate product signups, attract engineers..." value={contentGoals} onChange={e => setContentGoals(e.target.value)} />
+                      </div>
+                      <button type="submit" className="btn btn-primary">Save Memory Parameters</button>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* PAGE 9: LINKEDIN HUB */}
+              {path === '/linkedin' && (
+                <div>
+                  <div className="view-header">
+                    <div>
+                      <h1 className="view-title">LinkedIn Connection Hub</h1>
+                      <p>Link your account, request branding audits, and create comment networking replies.</p>
+                    </div>
+                  </div>
+
+                  {userData && userData.linkedinProfile && userData.linkedinProfile.connected ? (
+                    <div>
+                      {/* Connection profile card */}
+                      <div className="card" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                        <img src={userData.linkedinProfile.avatar} alt="LinkedIn Avatar" style={{ width: '80px', height: '80px', borderRadius: '50%', border: '2px solid var(--accent-primary)' }} />
+                        <div style={{ flex: 1 }}>
+                          <h2>{userData.linkedinProfile.name}</h2>
+                          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{userData.linkedinProfile.headline}</p>
+                          <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                            <span className="badge badge-success">✓ Authorized Live Connection</span>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>URN: {userData.linkedinProfile.urn}</span>
+                          </div>
+                        </div>
+                        <button className="btn btn-danger" onClick={handleDisconnectLinkedin}>Disconnect Account</button>
+                      </div>
+
+                      {/* Profile Branding Audit */}
+                      <div className="card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                          <h3 className="card-title" style={{ marginBottom: 0 }}>AI Profile Branding Audit</h3>
+                          <button className="btn btn-primary" onClick={handleAnalyzeProfile} disabled={isAuditingProfile}>
+                            {isAuditingProfile ? 'Auditing profile...' : 'Audit Profile Brand'}
+                          </button>
+                        </div>
+                        
+                        {profileAudit ? (
+                          <div style={{ whiteSpace: 'pre-wrap', backgroundColor: 'var(--bg-primary)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.9rem' }} dangerouslySetInnerHTML={{ __html: marked.parse(profileAudit) }} />
+                        ) : (
+                          <p style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>Click "Audit Profile Brand" to fetch details and run branding analysis utilizing Gemini.</p>
+                        )}
+                      </div>
+
+                      {/* Comment Networking suggestion */}
+                      <div className="card">
+                        <h3 className="card-title">Comment Networking Engine</h3>
+                        <p style={{ fontSize: '0.85rem', marginBottom: '16px' }}>Paste a target LinkedIn post you want to reply to. The AI will suggest 3 authentic comment templates representing your branding preferences.</p>
+                        <div className="form-group">
+                          <textarea className="form-control" style={{ minHeight: '80px' }} placeholder="Paste the post text content here..." value={commentTargetPost} onChange={e => setCommentTargetPost(e.target.value)} />
+                        </div>
+                        <button className="btn btn-primary" onClick={handleSuggestComments} disabled={isGeneratingComments || !commentTargetPost.trim()}>
+                          {isGeneratingComments ? 'Analyzing post...' : 'Generate 3 Suggested Comments'}
+                        </button>
+
+                        {suggestedComments.length > 0 && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '20px' }}>
+                            {suggestedComments.map((c, idx) => (
+                              <div key={idx} style={{ backgroundColor: 'var(--bg-primary)', padding: '14px', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                                  <span>Comment Suggestion {idx + 1}</span>
+                                  <button style={{ background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.75rem', color: 'var(--text-secondary)' }} onClick={() => {
+                                    navigator.clipboard.writeText(c);
+                                    addToast("Comment copied!");
+                                  }}>Copy Template</button>
+                                </div>
+                                <div>{c}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
+                      <span style={{ fontSize: '3rem' }}>🔗</span>
+                      <h3>Connect Your LinkedIn Account</h3>
+                      <p style={{ maxWidth: '480px', margin: '8px auto 20px auto' }}>Link your account securely to authorize drafts publishing and unlock profile analysis recommendations.</p>
+                      <button className="btn btn-primary" onClick={() => setShowLinkedinModal(true)}>Connect LinkedIn Profile</button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* LINKEDIN MOCK CONNECTION MODAL */}
+              {showLinkedinModal && (
+                <div className="modal-overlay">
+                  <div className="modal-container" style={{ maxWidth: '450px' }}>
+                    <button className="modal-close" onClick={() => setShowLinkedinModal(false)}>&times;</button>
+                    <h3>LinkedIn OAuth Simulation</h3>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '8px 0 20px 0' }}>Simulating connection workflow for developer sandboxing.</p>
+                    
+                    <form onSubmit={handleConnectLinkedin}>
+                      <div className="form-group">
+                        <label className="form-label">Full Name</label>
+                        <input type="text" className="form-control" value={mockLiName} onChange={e => setMockLiName(e.target.value)} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">LinkedIn Headline</label>
+                        <input type="text" className="form-control" value={mockLiHeadline} onChange={e => setMockLiHeadline(e.target.value)} required />
+                      </div>
+                      <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Connect Mock Profile</button>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* PAGE 10: SETTINGS PAGE */}
+              {path === '/settings' && (
+                <div>
+                  <div className="view-header">
+                    <div>
+                      <h1 className="view-title">Configuration Settings</h1>
+                      <p>Configure model selection, API key mappings, and plan tiers.</p>
+                    </div>
+                  </div>
+
+                  <div className="card">
+                    <form onSubmit={handleSaveSettings}>
+                      <div className="form-group">
+                        <label className="form-label">Select API Provider Model</label>
+                        <select className="form-control" value={apiProvider} onChange={e => {
+                          const val = e.target.value;
+                          setApiProvider(val);
+                          if (val === 'demo') setModel('gemini-2.5-flash');
+                          else if (val === 'groq') setModel('llama-3.3-70b-versatile');
+                          else if (val === 'ollama') setModel('llama3');
+                        }}>
+                          <option value="demo">Default Google Gemini (Server env default)</option>
+                          <option value="groq">Groq Llama 3</option>
+                          <option value="ollama">Ollama Local Llama</option>
+                        </select>
+                      </div>
+
+                      {apiProvider !== 'demo' && (
+                        <React.Fragment>
+                          <div className="form-group">
+                            <label className="form-label">Custom API Key (Optional)</label>
+                            <input type="password" className="form-control" placeholder="Leave empty to use server default keys" value={apiKey} onChange={e => setApiKey(e.target.value)} />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Model Name</label>
+                            <input type="text" className="form-control" value={model} onChange={e => setModel(e.target.value)} />
+                          </div>
+                        </React.Fragment>
+                      )}
+
+                      <button type="submit" className="btn btn-primary">Save Model Settings</button>
+                    </form>
+                  </div>
+
+                  <div className="card">
+                    <h3>Billing & Subscriptions</h3>
+                    <p style={{ margin: '8px 0 20px 0' }}>Configure limits and manage upgrades.</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                      <div>
+                        <strong>Current Plan: <span style={{ textTransform: 'capitalize' }}>{userData?.plan || 'free'}</span></strong>
+                        <p style={{ fontSize: '0.8rem', marginTop: '4px' }}>
+                          {userData?.plan === 'pro' ? 'Enjoy unlimited generations and full dashboard features.' : 'Limited to 5 generations total.'}
                         </p>
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <div>
-                    <div style={{
-                      width: '60px',
-                      height: '60px',
-                      borderRadius: '50%',
-                      backgroundColor: '#ffebee',
-                      color: '#cc0000',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '2rem',
-                      fontWeight: 'bold',
-                      margin: '0 auto 16px auto'
-                    }}>
-                      !
+                      {userData?.plan !== 'pro' && (
+                        <button className="btn btn-primary" onClick={handleUpgrade}>Upgrade to Pro</button>
+                      )}
                     </div>
-                    <h3 style={{ color: '#cc0000', marginBottom: '8px' }}>Publishing Failed</h3>
-                    <p className="muted" style={{ fontSize: '0.9rem', marginBottom: '24px' }}>{publishingError}</p>
-                    <button className="btn btn-secondary" onClick={() => setIsPublishing(false)}>
-                      Close
-                    </button>
                   </div>
-                )}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
 
-          <footer>
-            LinkedCraft — Built for Indian founders. Powered by Claude & React.
-          </footer>
+            </div>
+          </div>
         </div>
       );
     }
 
-    // Render the React application
     const container = document.getElementById('root');
     const root = ReactDOM.createRoot(container);
     root.render(<App />);

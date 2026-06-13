@@ -49,7 +49,44 @@ const db = {
   getUser: async (email) => {
     if (!email) return null;
     const data = await readDb();
-    return data.users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
+    const user = data.users.find(u => u.email.toLowerCase() === email.toLowerCase()) || null;
+    
+    if (user) {
+      // Dynamic backfill to ensure backwards compatibility with older db.json structures
+      if (user.plan === undefined) user.plan = 'free';
+      if (!user.memory) {
+        user.memory = {
+          niche: '',
+          industry: '',
+          targetAudience: '',
+          writingStyle: '',
+          contentGoals: ''
+        };
+      }
+      if (!user.conversations) user.conversations = [];
+      if (!user.calendar) user.calendar = [];
+      if (!user.analytics) {
+        // Build analytics structure using existing data if available
+        user.analytics = {
+          generationsCount: user.postsGenerated || 0,
+          publishedCount: user.publishedPosts ? user.publishedPosts.length : 0,
+          categories: { storytelling: 0, insight: 0, contrarian: 0, howto: 0 },
+          activityLog: []
+        };
+      }
+      if (!user.linkedinProfile) {
+        user.linkedinProfile = {
+          id: '',
+          name: '',
+          headline: 'Founder & Builder | Build In Public',
+          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+          connected: !!(user.linkedinAccessToken && user.linkedinPersonUrn),
+          token: user.linkedinAccessToken || '',
+          urn: user.linkedinPersonUrn || ''
+        };
+      }
+    }
+    return user;
   },
 
   createUser: async (email, password) => {
@@ -67,7 +104,34 @@ const db = {
       history: [],
       linkedinAccessToken: "",
       linkedinPersonUrn: "",
-      publishedPosts: []
+      publishedPosts: [],
+      
+      // New AI Growth Agent Schema
+      plan: 'free', // 'free' or 'pro'
+      memory: {
+        niche: '',
+        industry: '',
+        targetAudience: '',
+        writingStyle: '',
+        contentGoals: ''
+      },
+      conversations: [],
+      calendar: [],
+      analytics: {
+        generationsCount: 0,
+        publishedCount: 0,
+        categories: { storytelling: 0, insight: 0, contrarian: 0, howto: 0 },
+        activityLog: []
+      },
+      linkedinProfile: {
+        id: '',
+        name: '',
+        headline: 'Founder & CEO | Build In Public',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+        connected: false,
+        token: '',
+        urn: ''
+      }
     };
     data.users.push(newUser);
     await writeDb(data);
@@ -83,7 +147,30 @@ const db = {
     // Filter out passwordHash updates to prevent overwriting without hashing
     const { passwordHash, ...safeUpdates } = updates;
 
-    data.users[idx] = { ...data.users[idx], ...safeUpdates };
+    // Fetch user and ensure default structures are loaded before merging updates
+    const currentUser = data.users[idx];
+    
+    // Ensure nested objects aren't wiped out on partial updates
+    const mergedMemory = updates.memory 
+      ? { ...(currentUser.memory || {}), ...updates.memory }
+      : currentUser.memory;
+      
+    const mergedAnalytics = updates.analytics
+      ? { ...(currentUser.analytics || {}), ...updates.analytics }
+      : currentUser.analytics;
+
+    const mergedLinkedinProfile = updates.linkedinProfile
+      ? { ...(currentUser.linkedinProfile || {}), ...updates.linkedinProfile }
+      : currentUser.linkedinProfile;
+
+    data.users[idx] = { 
+      ...currentUser, 
+      ...safeUpdates,
+      memory: mergedMemory,
+      analytics: mergedAnalytics,
+      linkedinProfile: mergedLinkedinProfile
+    };
+    
     await writeDb(data);
     return data.users[idx];
   },

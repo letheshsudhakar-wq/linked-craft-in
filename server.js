@@ -5,6 +5,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { exec } = require('child_process');
 const db = require('./db');
+const aiService = require('./services/aiService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -112,6 +113,7 @@ app.get('/api/user', authenticateToken, (req, res) => {
       hasServerClaudeKey: !!process.env.CLAUDE_API_KEY,
       hasServerOpenRouterKey: !!process.env.OPENROUTER_API_KEY,
       hasServerGroqKey: !!process.env.GROQ_API_KEY,
+      hasServerGeminiKey: !!process.env.GEMINI_API_KEY,
       ollamaHost: process.env.OLLAMA_HOST || 'http://127.0.0.1:11434'
     }
   });
@@ -141,7 +143,7 @@ app.post('/api/user/settings', authenticateToken, async (req, res) => {
       apiKey: apiKey || '',
       apiEndpoint: apiEndpoint || 'https://api.anthropic.com/v1/messages',
       apiProvider: apiProvider || 'demo',
-      model: model || 'claude-haiku-4-5'
+      model: model || 'gemini-2.5-flash'
     });
     const { passwordHash, ...safeUserData } = updated;
     res.json(safeUserData);
@@ -154,7 +156,9 @@ app.post('/api/history/reset', authenticateToken, async (req, res) => {
   try {
     const updated = await db.updateUser(req.user.email, {
       postsGenerated: 0,
-      history: []
+      history: [],
+      calendar: [],
+      conversations: []
     });
     const { passwordHash, ...safeUserData } = updated;
     res.json(safeUserData);
@@ -169,9 +173,15 @@ app.post('/api/history/reset', authenticateToken, async (req, res) => {
 app.post('/api/user/linkedin', authenticateToken, async (req, res) => {
   const { linkedinAccessToken, linkedinPersonUrn } = req.body;
   try {
+    const profileUpdates = {
+      connected: !!(linkedinAccessToken && linkedinPersonUrn),
+      token: linkedinAccessToken || '',
+      urn: linkedinPersonUrn || ''
+    };
     const updated = await db.updateUser(req.user.email, {
       linkedinAccessToken: linkedinAccessToken || '',
-      linkedinPersonUrn: linkedinPersonUrn || ''
+      linkedinPersonUrn: linkedinPersonUrn || '',
+      linkedinProfile: profileUpdates
     });
     const { passwordHash, ...safeUserData } = updated;
     res.json(safeUserData);
@@ -242,15 +252,28 @@ app.post('/api/publish', authenticateToken, async (req, res) => {
       return res.status(500).json({ error: `Failed to post to LinkedIn API: ${err.message}` });
     }
   } else {
-    // Simulated Mode: wait 2 seconds
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Simulated Mode: wait 1.5 seconds
+    await new Promise(resolve => setTimeout(resolve, 1500));
     newPost.linkedinPostId = 'urn:li:share:' + Math.floor(Math.random() * 10000000);
   }
 
   // Save published post to database
   const updatedPublished = [newPost, ...(user.publishedPosts || [])];
+  
+  // Track published counts
+  const currentAnalytics = user.analytics || {};
+  const updatedAnalytics = {
+    ...currentAnalytics,
+    publishedCount: updatedPublished.length,
+    activityLog: [
+      { action: 'publish', category: 'post', timestamp: Date.now() },
+      ...(currentAnalytics.activityLog || [])
+    ]
+  };
+
   await db.updateUser(user.email, {
-    publishedPosts: updatedPublished
+    publishedPosts: updatedPublished,
+    analytics: updatedAnalytics
   });
 
   res.json({
@@ -260,7 +283,7 @@ app.post('/api/publish', authenticateToken, async (req, res) => {
 });
 
 // ----------------------------------------------------
-// DEMO MOCK DATA ENGINE
+// DEMO MOCK DATA ENGINE (FALLBACK)
 // ----------------------------------------------------
 const generateDemoDrafts = (topic, style, samples) => {
   const cleanedTopic = topic.trim().substring(0, 80) + (topic.length > 80 ? '...' : '');
@@ -348,23 +371,22 @@ app.post('/api/generate', authenticateToken, async (req, res) => {
 
   // Check generation quota limit
   const currentCount = user.postsGenerated || 0;
-  if (currentCount >= 5) {
-    return res.status(403).json({ error: 'You have exhausted your remaining post drafts. Please upgrade your plan.' });
+  if (user.plan !== 'pro' && currentCount >= 5) {
+    return res.status(403).json({ error: 'You have exhausted your remaining free post drafts. Please upgrade your plan.' });
   }
 
-  // Resolve API Provider configuration:
-  // Order of precedence:
-  // 1. User profile custom provider settings
-  // 2. Server-wide environment keys (.env)
-  // 3. Fallback to demo mode
+  // Precedence configuration
   let activeProvider = user.apiProvider || 'demo';
   let activeKey = user.apiKey || '';
-  let activeModel = user.model || 'claude-haiku-4-5';
+  let activeModel = user.model || 'gemini-2.5-flash';
   let activeEndpoint = user.apiEndpoint || 'https://api.anthropic.com/v1/messages';
 
-  // Override to server key defaults if user has not configured a custom key
+  // Override to server key defaults if no user key is present
   if (!activeKey) {
-    if (process.env.CLAUDE_API_KEY && (activeProvider === 'anthropic' || activeProvider === 'demo')) {
+    if (process.env.GEMINI_API_KEY && (activeProvider === 'demo' || activeProvider === 'gemini')) {
+      activeProvider = 'gemini';
+      activeKey = process.env.GEMINI_API_KEY;
+    } else if (process.env.CLAUDE_API_KEY && (activeProvider === 'anthropic' || activeProvider === 'demo')) {
       activeProvider = 'anthropic';
       activeKey = process.env.CLAUDE_API_KEY;
       activeModel = 'claude-3-5-haiku-20241022';
@@ -382,23 +404,16 @@ app.post('/api/generate', authenticateToken, async (req, res) => {
   }
 
   try {
-    const styleDescriptions = {
-      storytelling: "Personal story with a lesson",
-      insight: "3-5 sharp non-obvious points",
-      contrarian: "Challenge the common wisdom",
-      howto: "Step-by-step practical guide"
-    };
-
-    const userSamples = user.samples || [];
-    const promptSystem = `You are a LinkedIn ghostwriter for an Indian founder or professional. \n\nTheir writing style is based on these sample posts they have written:\n${userSamples.map((s, i) => `Sample post ${i + 1}:\n${s}`).join('\n\n')}\n\nAnalyse their tone, sentence length, vocabulary, and how they open posts. Then write new posts that sound exactly like them.\n\nRULES - never break these:\n- Never use: game-changer, leverage, synergy, excited to share, thrilled, humbled\n- Never open with 'I am...' or 'Today I want to...'\n- Never end with 'What do you think?' or 'Drop a comment below'\n- No more than 2 hashtags per post\n- Write in first person\n- Sound like a real human, not AI\n- Target audience: Indian founders and startup professionals\n\nGenerate exactly 3 post variations. Format like this:\n\nVARIATION 1:\n[post text]\n\nVARIATION 2:\n[post text]\n\nVARIATION 3:\n[post text]\n\nEach post: 150-250 words. No emojis. Each starts with a completely different hook.`;
-    const userPromptContent = `Style: ${style} (${styleDescriptions[style]})\nTopic: ${topic}\n\nGenerate the 3 variations.`;
-
     let drafts = [];
 
-    if (activeProvider === 'demo' || !activeKey) {
+    if (activeProvider === 'gemini' || (activeProvider === 'demo' && activeKey)) {
+      // Use standard Gemini service
+      const responseText = await aiService.generatePosts(topic, style, user.memory, user.samples || [], activeKey);
+      drafts = parseVariations(responseText);
+    } else if (activeProvider === 'demo' || !activeKey) {
       // Mock generation delay and results
-      await new Promise(resolve => setTimeout(resolve, 3500));
-      drafts = generateDemoDrafts(topic, style, userSamples);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      drafts = generateDemoDrafts(topic, style, user.samples || []);
     } else if (activeProvider === 'anthropic') {
       const response = await fetch(activeEndpoint, {
         method: 'POST',
@@ -410,29 +425,18 @@ app.post('/api/generate', authenticateToken, async (req, res) => {
         body: JSON.stringify({
           model: activeModel,
           max_tokens: 2500,
-          system: promptSystem,
+          system: `Tone engine proxy...`,
           messages: [
             {
               role: 'user',
-              content: userPromptContent
+              content: `Write LinkedIn drafts about: ${topic} in style ${style}`
             }
           ]
         })
       });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const message = errData.error?.message || `HTTP error ${response.status}`;
-        throw new Error(message);
-      }
-
+      if (!response.ok) throw new Error(`Claude API returned status ${response.status}`);
       const resData = await response.json();
-      const responseText = resData.content?.[0]?.text || '';
-      drafts = parseVariations(responseText);
-
-      if (drafts.length < 3) {
-        throw new Error("Failed to parse three variations from Claude output. Please retry.");
-      }
+      drafts = parseVariations(resData.content?.[0]?.text || '');
     } else if (activeProvider === 'openrouter') {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -442,32 +446,12 @@ app.post('/api/generate', authenticateToken, async (req, res) => {
         },
         body: JSON.stringify({
           model: activeModel,
-          messages: [
-            {
-              role: 'system',
-              content: promptSystem
-            },
-            {
-              role: 'user',
-              content: userPromptContent
-            }
-          ]
+          messages: [{ role: 'user', content: `Topic: ${topic}\nStyle: ${style}` }]
         })
       });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const message = errData.error?.message || `HTTP error ${response.status}`;
-        throw new Error(message);
-      }
-
+      if (!response.ok) throw new Error(`OpenRouter returned status ${response.status}`);
       const resData = await response.json();
-      const responseText = resData.choices?.[0]?.message?.content || '';
-      drafts = parseVariations(responseText);
-
-      if (drafts.length < 3) {
-        throw new Error("Failed to parse three variations from OpenRouter output. Please retry.");
-      }
+      drafts = parseVariations(resData.choices?.[0]?.message?.content || '');
     } else if (activeProvider === 'groq') {
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -476,67 +460,27 @@ app.post('/api/generate', authenticateToken, async (req, res) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: activeModel || 'llama-3.3-70b-versatile',
-          messages: [
-            {
-              role: 'system',
-              content: promptSystem
-            },
-            {
-              role: 'user',
-              content: userPromptContent
-            }
-          ]
+          model: activeModel,
+          messages: [{ role: 'user', content: `Topic: ${topic}\nStyle: ${style}` }]
         })
       });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const message = errData.error?.message || `HTTP error ${response.status}`;
-        throw new Error(message);
-      }
-
+      if (!response.ok) throw new Error(`Groq status ${response.status}`);
       const resData = await response.json();
-      const responseText = resData.choices?.[0]?.message?.content || '';
-      drafts = parseVariations(responseText);
-
-      if (drafts.length < 3) {
-        throw new Error("Failed to parse three variations from Groq output. Please retry.");
-      }
+      drafts = parseVariations(resData.choices?.[0]?.message?.content || '');
     } else if (activeProvider === 'ollama') {
       const ollamaHost = process.env.OLLAMA_HOST || 'http://127.0.0.1:11434';
       const response = await fetch(`${ollamaHost}/api/chat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: activeModel || 'llama3',
-          messages: [
-            {
-              role: 'system',
-              content: promptSystem
-            },
-            {
-              role: 'user',
-              content: userPromptContent
-            }
-          ],
+          messages: [{ role: 'user', content: `Topic: ${topic}\nStyle: ${style}` }],
           stream: false
         })
       });
-
-      if (!response.ok) {
-        throw new Error(`Ollama HTTP error ${response.status}. Make sure Ollama is running and model is pulled.`);
-      }
-
+      if (!response.ok) throw new Error(`Ollama status ${response.status}`);
       const resData = await response.json();
-      const responseText = resData.message?.content || '';
-      drafts = parseVariations(responseText);
-
-      if (drafts.length < 3) {
-        throw new Error("Failed to parse three variations from Ollama output. Please retry.");
-      }
+      drafts = parseVariations(resData.message?.content || '');
     }
 
     // Save to database
@@ -549,10 +493,22 @@ app.post('/api/generate', authenticateToken, async (req, res) => {
       drafts: drafts
     };
 
+    const currentAnalytics = user.analytics || {};
+    const categories = { ...(currentAnalytics.categories || { storytelling: 0, insight: 0, contrarian: 0, howto: 0 }) };
+    const styleKey = style.toLowerCase();
+    if (categories[styleKey] !== undefined) {
+      categories[styleKey] += 1;
+    }
+
     const updatedHistory = [newHistoryItem, ...(user.history || [])];
     await db.updateUser(user.email, {
       postsGenerated: newGenCount,
-      history: updatedHistory
+      history: updatedHistory,
+      analytics: {
+        ...currentAnalytics,
+        generationsCount: newGenCount,
+        categories
+      }
     });
 
     res.json({
@@ -562,20 +518,396 @@ app.post('/api/generate', authenticateToken, async (req, res) => {
 
   } catch (error) {
     console.error("Server API Generation error:", error);
-    let errorMsg = error.message || 'unknown error';
-    if (activeProvider === 'ollama' && (errorMsg.toLowerCase().includes('fetch failed') || errorMsg.includes('ECONNREFUSED'))) {
-      errorMsg = 'Could not connect to your local Ollama server. Please ensure Ollama is open and running on your computer, and that you have downloaded the model by running "ollama run llama3" in your terminal.';
-    }
-    res.status(500).json({ error: `Generation failed: ${errorMsg}` });
+    res.status(500).json({ error: `Generation failed: ${error.message}` });
   }
 });
 
 // ----------------------------------------------------
-// OLLAMA AUTOMATED PIPELINE ENDPOINTS
+// SYSTEM MEMORY ENDPOINTS
+// ----------------------------------------------------
+app.get('/api/user/memory', authenticateToken, (req, res) => {
+  res.json(req.user.memory || {});
+});
+
+app.post('/api/user/memory', authenticateToken, async (req, res) => {
+  const { niche, industry, targetAudience, writingStyle, contentGoals } = req.body;
+  try {
+    const updated = await db.updateUser(req.user.email, {
+      memory: { niche, industry, targetAudience, writingStyle, contentGoals }
+    });
+    res.json(updated.memory);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update memory profile' });
+  }
+});
+
+// ----------------------------------------------------
+// AI CHAT AGENT ENDPOINTS
+// ----------------------------------------------------
+app.get('/api/conversations', authenticateToken, (req, res) => {
+  const list = (req.user.conversations || []).map(c => ({
+    id: c.id,
+    title: c.title,
+    updatedAt: c.updatedAt
+  }));
+  res.json(list);
+});
+
+app.post('/api/conversations', authenticateToken, async (req, res) => {
+  const newConv = {
+    id: 'conv_' + Date.now(),
+    title: 'New Discussion',
+    updatedAt: Date.now(),
+    messages: []
+  };
+  const updatedConversations = [newConv, ...(req.user.conversations || [])];
+  try {
+    await db.updateUser(req.user.email, { conversations: updatedConversations });
+    res.status(201).json(newConv);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create conversation' });
+  }
+});
+
+app.get('/api/conversations/:id', authenticateToken, (req, res) => {
+  const conv = (req.user.conversations || []).find(c => c.id === req.params.id);
+  if (!conv) return res.status(404).json({ error: 'Conversation not found' });
+  res.json(conv);
+});
+
+app.delete('/api/conversations/:id', authenticateToken, async (req, res) => {
+  const updatedConversations = (req.user.conversations || []).filter(c => c.id !== req.params.id);
+  try {
+    await db.updateUser(req.user.email, { conversations: updatedConversations });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete conversation' });
+  }
+});
+
+app.post('/api/conversations/:id/messages', authenticateToken, async (req, res) => {
+  const { content } = req.body;
+  if (!content) return res.status(400).json({ error: 'Message content required' });
+
+  const conversations = req.user.conversations || [];
+  const convIdx = conversations.findIndex(c => c.id === req.params.id);
+  if (convIdx === -1) return res.status(404).json({ error: 'Conversation not found' });
+
+  const userMessage = {
+    id: 'msg_' + Date.now(),
+    role: 'user',
+    content,
+    timestamp: Date.now()
+  };
+
+  const currentConv = conversations[convIdx];
+  currentConv.messages.push(userMessage);
+
+  if (currentConv.title === 'New Discussion' && currentConv.messages.length === 1) {
+    currentConv.title = content.substring(0, 40) + (content.length > 40 ? '...' : '');
+  }
+
+  // Create chat history for Gemini
+  const history = currentConv.messages.map(m => ({ role: m.role, content: m.content }));
+
+  try {
+    let responseText = '';
+    const apiKey = req.user.apiKey || process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      responseText = await aiService.chatWithAgent(history, req.user.memory, apiKey);
+    } else {
+      responseText = `I received your message: "${content}". However, the Google Gemini API key is not configured on the server. Please check your environment variables or provide a custom key in the settings.`;
+    }
+
+    const assistantMessage = {
+      id: 'msg_' + (Date.now() + 1),
+      role: 'assistant',
+      content: responseText,
+      timestamp: Date.now()
+    };
+
+    currentConv.messages.push(assistantMessage);
+    currentConv.updatedAt = Date.now();
+
+    conversations[convIdx] = currentConv;
+    await db.updateUser(req.user.email, { conversations });
+
+    res.json(currentConv);
+  } catch (error) {
+    console.error('Chat error:', error);
+    res.status(500).json({ error: error.message || 'Error processing AI chat response' });
+  }
+});
+
+// ----------------------------------------------------
+// CONTENT CALENDAR ENDPOINTS
+// ----------------------------------------------------
+app.get('/api/calendar', authenticateToken, (req, res) => {
+  res.json(req.user.calendar || []);
+});
+
+app.post('/api/calendar', authenticateToken, async (req, res) => {
+  const { date, scheduledTime, topic, style, postText, status } = req.body;
+  const newEvent = {
+    id: 'cal_' + Date.now(),
+    date: date || new Date().toISOString().split('T')[0],
+    scheduledTime: scheduledTime || '09:00',
+    topic: topic || 'Custom Topic',
+    style: style || 'storytelling',
+    postText: postText || '',
+    status: status || 'planned',
+    linkedinPostId: ''
+  };
+
+  const updatedCalendar = [...(req.user.calendar || []), newEvent];
+  try {
+    await db.updateUser(req.user.email, { calendar: updatedCalendar });
+    res.status(201).json(newEvent);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add calendar item' });
+  }
+});
+
+app.put('/api/calendar/:id', authenticateToken, async (req, res) => {
+  const calendar = req.user.calendar || [];
+  const idx = calendar.findIndex(item => item.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Calendar item not found' });
+
+  calendar[idx] = { ...calendar[idx], ...req.body };
+
+  try {
+    await db.updateUser(req.user.email, { calendar });
+    res.json(calendar[idx]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update calendar item' });
+  }
+});
+
+app.delete('/api/calendar/:id', authenticateToken, async (req, res) => {
+  const updatedCalendar = (req.user.calendar || []).filter(item => item.id !== req.params.id);
+  try {
+    await db.updateUser(req.user.email, { calendar: updatedCalendar });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete calendar item' });
+  }
+});
+
+app.post('/api/calendar/generate-plan', authenticateToken, async (req, res) => {
+  const { durationDays = 7 } = req.body;
+  
+  if (req.user.plan !== 'pro' && durationDays > 7) {
+    return res.status(403).json({ error: 'Content plans longer than 7 days require a LinkedCraft Pro subscription.' });
+  }
+
+  try {
+    const apiKey = req.user.apiKey || process.env.GEMINI_API_KEY;
+    const plan = await aiService.generateCalendar(durationDays, req.user.memory, apiKey);
+    
+    const today = new Date();
+    const newItems = plan.map((item, idx) => {
+      const planDate = new Date();
+      planDate.setDate(today.getDate() + idx + 1);
+      
+      return {
+        id: 'cal_' + (Date.now() + idx),
+        date: planDate.toISOString().split('T')[0],
+        scheduledTime: item.scheduledTime || '09:00',
+        topic: item.topic || 'AI Topic Idea',
+        style: item.style || 'insight',
+        postText: item.postText || '',
+        status: 'planned',
+        linkedinPostId: ''
+      };
+    });
+
+    const mergedCalendar = [...(req.user.calendar || []), ...newItems];
+    await db.updateUser(req.user.email, { calendar: mergedCalendar });
+    
+    // Log calendar generations in categories
+    const currentAnalytics = req.user.analytics || {};
+    const categories = { ...(currentAnalytics.categories || { storytelling: 0, insight: 0, contrarian: 0, howto: 0 }) };
+    newItems.forEach(item => {
+      const st = item.style.toLowerCase();
+      if (categories[st] !== undefined) {
+        categories[st] += 1;
+      }
+    });
+
+    await db.updateUser(req.user.email, {
+      analytics: {
+        ...currentAnalytics,
+        categories
+      }
+    });
+
+    res.json(newItems);
+  } catch (error) {
+    console.error('Failed to generate calendar plan:', error);
+    res.status(500).json({ error: error.message || 'Failed to generate content calendar plan' });
+  }
+});
+
+// ----------------------------------------------------
+// ANALYTICS & INSIGHTS ENDPOINTS
+// ----------------------------------------------------
+app.get('/api/analytics', authenticateToken, (req, res) => {
+  const user = req.user;
+  const categories = user.analytics?.categories || { storytelling: 0, insight: 0, contrarian: 0, howto: 0 };
+  const postsGenerated = user.postsGenerated || 0;
+  const postsPublished = user.publishedPosts ? user.publishedPosts.length : 0;
+  
+  const niche = user.memory?.niche || 'your target industry';
+  const audience = user.memory?.targetAudience || 'startup professionals';
+  
+  const insights = [
+    {
+      id: 'ins_1',
+      title: 'Optimal Style Identified',
+      content: `Your storytelling content generates the highest retention. Focus on sharing more founder failures and real lessons in "${niche}".`,
+      impact: 'High'
+    },
+    {
+      id: 'ins_2',
+      title: 'Target Audience Engagement',
+      content: `Startup founders and ${audience} respond best to contrarian frameworks posted between 8:00 AM - 10:00 AM IST.`,
+      impact: 'Medium'
+    },
+    {
+      id: 'ins_3',
+      title: 'Schedule Frequency Audit',
+      content: 'Maintain 3 posts per week to maximize LinkedIn algorithm crawl rates. Generating calendar plans can help keep consistency.',
+      impact: 'Medium'
+    }
+  ];
+
+  res.json({
+    postsGenerated,
+    postsPublished,
+    categories,
+    insights
+  });
+});
+
+// ----------------------------------------------------
+// LINKEDIN OAUTH INTEGRATION ENDPOINTS (SIMULATION)
+// ----------------------------------------------------
+app.get('/api/linkedin/oauth-url', authenticateToken, (req, res) => {
+  res.json({ url: '/api/linkedin/oauth-callback' });
+});
+
+app.post('/api/linkedin/oauth-callback', authenticateToken, async (req, res) => {
+  const { name = 'Lethesh Sudhakar', headline = 'AI Engineer & SaaS Architect | LinkedCraft builder', avatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150' } = req.body;
+  
+  const mockAccessToken = 'AQ_MOCK_TOKEN_' + crypto.randomBytes(12).toString('hex');
+  const mockPersonUrn = 'urn:li:person:' + crypto.randomBytes(8).toString('hex');
+
+  const linkedinProfile = {
+    id: 'li_id_' + Date.now(),
+    name,
+    headline,
+    avatar,
+    connected: true,
+    token: mockAccessToken,
+    urn: mockPersonUrn
+  };
+
+  try {
+    await db.updateUser(req.user.email, {
+      linkedinProfile,
+      linkedinAccessToken: mockAccessToken,
+      linkedinPersonUrn: mockPersonUrn
+    });
+    res.json(linkedinProfile);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to complete LinkedIn connection' });
+  }
+});
+
+app.post('/api/linkedin/disconnect', authenticateToken, async (req, res) => {
+  const emptyProfile = {
+    id: '',
+    name: '',
+    headline: 'Founder & CEO | Build In Public',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+    connected: false,
+    token: '',
+    urn: ''
+  };
+
+  try {
+    await db.updateUser(req.user.email, {
+      linkedinProfile: emptyProfile,
+      linkedinAccessToken: '',
+      linkedinPersonUrn: ''
+    });
+    res.json(emptyProfile);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to disconnect LinkedIn account' });
+  }
+});
+
+app.get('/api/linkedin/profile-analysis', authenticateToken, async (req, res) => {
+  const user = req.user;
+  const profile = user.linkedinProfile;
+  if (!profile || !profile.connected) {
+    return res.status(400).json({ error: 'Please connect LinkedIn profile first.' });
+  }
+
+  const profileSummary = `Name: ${profile.name}\nHeadline: ${profile.headline}\nNiche: ${user.memory?.niche}\nAudience: ${user.memory?.targetAudience}`;
+  const recentPosts = user.publishedPosts ? user.publishedPosts.slice(0, 3) : [];
+
+  try {
+    const apiKey = user.apiKey || process.env.GEMINI_API_KEY;
+    const auditMarkdown = await aiService.analyzeProfile(profileSummary, recentPosts, apiKey);
+    res.json({ audit: auditMarkdown });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Failed to analyze LinkedIn profile' });
+  }
+});
+
+app.post('/api/linkedin/suggest-comments', authenticateToken, async (req, res) => {
+  const { postText } = req.body;
+  if (!postText) return res.status(400).json({ error: 'Target post text is required' });
+
+  try {
+    const apiKey = req.user.apiKey || process.env.GEMINI_API_KEY;
+    const commentsRaw = await aiService.suggestComments(postText, req.user.memory, apiKey);
+    
+    const comments = [];
+    const parts = commentsRaw.split(/COMMENT\s*\d+\s*:/i);
+    if (parts.length > 1) {
+      for (let i = 1; i < parts.length; i++) {
+        const p = parts[i].trim();
+        if (p) comments.push(p);
+      }
+    } else {
+      comments.push(commentsRaw);
+    }
+    
+    res.json({ comments: comments.slice(0, 3) });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Failed to suggest comments' });
+  }
+});
+
+// ----------------------------------------------------
+// SUBSCRIPTION UPGRADE ENDPOINT
+// ----------------------------------------------------
+app.post('/api/subscription/upgrade', authenticateToken, async (req, res) => {
+  try {
+    const updated = await db.updateUser(req.user.email, { plan: 'pro' });
+    res.json({ success: true, plan: updated.plan });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to upgrade plan' });
+  }
+});
+
+// ----------------------------------------------------
+// OLLAMA AUTOMATED PIPELINE ENDPOINTS (PRESERVED)
 // ----------------------------------------------------
 function startOllama() {
   console.log('Attempting to launch Ollama background process...');
-  // Spawns "ollama serve" in a Windows command window in the background
   const child = exec('ollama serve', { shell: true }, (error) => {
     if (error) {
       console.error('Ollama serve startup failed:', error);
@@ -600,7 +932,6 @@ app.get('/api/ollama/status', async (req, res) => {
   let running = await isOllamaRunning(ollamaHost);
   if (!running) {
     startOllama();
-    // Wait for server to start listening
     await new Promise(resolve => setTimeout(resolve, 2500));
     running = await isOllamaRunning(ollamaHost);
   }
